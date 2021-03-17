@@ -35,7 +35,7 @@ module.exports = {
             nodeIntegration: true,
             builderOptions: {
                 appId: "cs.xiongyechang.com",
-                productName: "code-snippet", // 项目名，也是生成的安装文件名，即aDemo.exe
+                productName: "宝码", // 项目名，也是生成的安装文件名，即aDemo.exe
                 copyright: "Copyright © 2021", // 版权信息
                 win: {
                     icon: "./public/favicon.ico",

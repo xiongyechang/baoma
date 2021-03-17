@@ -7,7 +7,7 @@
           </span>
         </div>
         <img :style="logoMarginLeft" src="@/assets/logo.png" width="24" height="24">
-        <span>{{ app.getName() }} {{ app.getVersion() }}</span>
+        <span>宝码{{ version }}</span>
     </div>
     <div>
       <span class="opt-minimize" @click.stop="minimize">
@@ -25,7 +25,7 @@
 
 <script>
 
-import { remote } from "electron";
+import { app, getCurrentWindow } from '@electron/remote';
 import { computed, onMounted } from 'vue';
 import { onBeforeRouteLeave, useRoute, useRouter } from "vue-router";
 import { WindowSize, WindowSizeIcon } from '@/constants/constants';
@@ -35,8 +35,9 @@ export default {
   setup() {
 
     let currWindow = null,
-        app = remote.app,
         windowSize = WindowSize.normal;
+
+    const version = app.getVersion()
 
     // 获取路由器实例
     const router = useRouter();
@@ -45,7 +46,7 @@ export default {
 
     onMounted(() => {
 
-      currWindow = remote.getCurrentWindow(); // 当前窗口
+      currWindow = getCurrentWindow(); // 当前窗口
 
       document.addEventListener("visibilitychange", () => {
         var isHidden = document.hidden;
@@ -95,7 +96,7 @@ export default {
     }
 
     const close = () => {
-      remote.app.quit();
+      app.quit();
     }
 
     const back = () => {
@@ -104,6 +105,7 @@ export default {
 
     return {
       app,
+      version,
       fullscreen,
       showBackBtn,
       logoMarginLeft,

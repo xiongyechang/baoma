@@ -29,9 +29,13 @@ async function createWindow() {
       nodeIntegration: true, // process.env.ELECTRON_NODE_INTEGRATION
       contextIsolation: false,
       webSecurity: false,
-      enableRemoteModule: true
+      // 在electron 10.0.0之后，remote模块默认关闭
+      // 必须手动设置webPreferences中的enableRemoteModule为true之后才能使用
+      enableRemoteModule: true, // 这里是关键设置
     }
   })
+
+  require('@electron/remote/main').initialize()
 
   if (process.env.WEBPACK_DEV_SERVER_URL) {
     // Load the url of the dev server if in development mode

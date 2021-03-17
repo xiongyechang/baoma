@@ -40,7 +40,7 @@ export default {
   name: "search-list",
   components : { CodeCategory },
   setup(props, context) {
-    console.log(props, context);
+    
     const data = reactive({
       keyword: "",
       list: [],

@@ -9,9 +9,8 @@ import hljs from 'highlight.js';
 import { parse } from 'flowchart.js';
 import xss from "xss";
 import { Button } from "@/constants/constants";
-import { shell, remote } from 'electron';
-
-const dialog = remote.dialog;
+import { shell } from 'electron';
+import { dialog } from '@electron/remote';
 
 export default {
   name: "html-markdown",

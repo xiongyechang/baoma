@@ -1,7 +1,7 @@
 <template>
     <div class="admin-page">
         <el-row class="admin-page-toolbar">
-            <span v-for="tool in toolbar" class="tool-icon" @click.stop.prevent="doAction({
+            <span v-for="tool in toolbar" class="tool-icon" @click="doAction({
                 action: tool.action
             })" :key="tool.icon" :title="tool.title">
                 <el-popover
@@ -40,9 +40,6 @@
         :append-to-body="true"
         width="30%">
         <el-form ref="markdownEditorRef" :model="form" :rules="rules" label-width="80px">
-            <!-- <el-form-item label="标题" prop="title" required>
-                <el-input type="text" v-model="form.title" required></el-input>
-            </el-form-item> -->
             <el-form-item label="禁用" prop="disabled" required>
                 <el-select filterable v-model="form.disabled" style="width: 100%;" placeholder="是否禁用">
                     <el-option v-for="item of disabledList" :key="item.value" :label="item.label" :value="item.value"></el-option>
@@ -83,8 +80,8 @@ import fs from 'fs'
 import path from 'path'
 import { HttpResponseCode } from '@/constants/constants'
 import QiniuMixin from '@/mixins/qiniu'
-import { ElMessage,  } from 'element-plus'
-import { clipboard, shell, remote } from 'electron'
+import { ElMessage  } from 'element-plus'
+import { clipboard, shell } from 'electron'
 import markdownItMultimdTable from 'markdown-it-multimd-table'
 import markdownItAbbr from 'markdown-it-abbr'
 import markdownItAnchor from 'markdown-it-anchor'
