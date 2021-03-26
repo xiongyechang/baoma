@@ -33,6 +33,7 @@ module.exports = {
     pluginOptions: {
         electronBuilder: {
             nodeIntegration: true,
+            externals: ['clipboard'], // Cannot find module 'clipboard'
             builderOptions: {
                 appId: "cs.xiongyechang.com",
                 productName: "宝码", // 项目名，也是生成的安装文件名，即aDemo.exe
@@ -74,7 +75,7 @@ module.exports = {
                     "installerHeaderIcon": "./public/favicon.ico", // 安装时头部图标
                     "createDesktopShortcut": true, // 创建桌面图标
                     "createStartMenuShortcut": true,// 创建开始菜单图标
-                    "shortcutName": "code-snippet", // 图标名称
+                    "shortcutName": "宝码", // 图标名称
                 },
                 publish: [{
                     provider: "generic",

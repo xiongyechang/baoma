@@ -3,7 +3,7 @@
       <el-col class="full-height pad10" :span="6">
         <search-list @row-click="rowClick"></search-list>
       </el-col>
-      <el-col class="content full-height pad10" :span="18">
+      <el-col class="content full-height pad10 scrollbar" :span="18">
         <HtmlMarkdown :markdown="markdown"></HtmlMarkdown>
       </el-col>
     </el-row>

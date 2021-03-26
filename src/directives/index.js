@@ -1,4 +1,6 @@
 import hljs from 'highlight.js'
+import Prism from 'prismjs'
+import 'prismjs/themes/prism-twilight.css'
 
 export const highlight = {
   beforeMount(el, binding, vnode, prevVnode) {},
@@ -7,7 +9,7 @@ export const highlight = {
       blocks.forEach(block => {
         hljs.highlightBlock(block)
       });
-      window.Prism.highlightAll()
+      Prism.highlightAll()
   },
   beforeUpdate() {},
   updated() {},

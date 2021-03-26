@@ -3,7 +3,7 @@
 </template>
 
 <script>
-import { ref, reactive, computed, directives, onMounted } from 'vue'; 
+import { ref, reactive, computed, directives, onMounted, onUnmounted } from 'vue'; 
 import marked from 'marked';
 import hljs from 'highlight.js';
 import { parse } from 'flowchart.js';
@@ -18,25 +18,33 @@ export default {
     markdown: String
   },
   setup(props, context) {
+    let markdown = null;
+
     const compiledMarkdown = computed(() => marked(props.markdown, { sanitize: false }))
 
-    onMounted(() => {
-      const markdown = document.querySelector(`#markdown`)
-      markdown.addEventListener("click", event => {
-        const element = event.target;
-        if (element.tagName.toLowerCase() === 'a') {
-          event.preventDefault();
-          const result = dialog.showMessageBoxSync({
-            title: '通知',
-            type: 'question',
-            message: `是否使用默认浏览器打开该链接`,
-            buttons: [Button.Cancel, Button.OK]
-          });
-          if (result) {
-            shell.openExternal(element.href);
-          }
+    const clickHandler = event => {
+      const element = event.target;
+      if (element.tagName.toLowerCase() === 'a') {
+        event.preventDefault();
+        const result = dialog.showMessageBoxSync({
+          title: '通知',
+          type: 'question',
+          message: `是否使用默认浏览器打开该链接`,
+          buttons: [Button.Cancel, Button.OK]
+        });
+        if (result) {
+          shell.openExternal(element.href);
         }
-      }, true);
+      }
+    }
+
+    onMounted(() => {
+      markdown = document.querySelector(`#markdown`)
+      markdown.addEventListener("click", clickHandler, true);
+    })
+
+    onUnmounted(() => {
+      markdown.removeEventListener("click", clickHandler);
     })
 
     const renderer = new marked.Renderer();
