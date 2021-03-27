@@ -310,6 +310,8 @@ export default {
 
 .page-content-row {
     height: 100%;
+    padding: 0 10px 10px 10px;
+    box-sizing: border-box;
     overflow: auto;
 }
 

@@ -12,7 +12,6 @@ import ElementPlus from 'element-plus'
 import 'element-plus/lib/theme-chalk/index.css'
 import "animate.css"
 import "@/assets/iconfont/iconfont.css"
-import 'markdown-it-latex/dist/index.css'
 import 'highlight.js/styles/monokai.css'
 
 const app = createApp(App)

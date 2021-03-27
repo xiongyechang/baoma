@@ -3,7 +3,7 @@
 </template>
 
 <script>
-import { ref, reactive, computed, directives, onMounted, onUnmounted } from 'vue'; 
+import { computed, onMounted, onUnmounted } from 'vue'; 
 import marked from 'marked';
 import hljs from 'highlight.js';
 import { parse } from 'flowchart.js';
@@ -58,7 +58,7 @@ export default {
         return hljs.highlightAuto(code).value
       } else if (language) {
         // 默认解析
-        return `<pre class="language-${language}"><code class="hljs language-${language}">${hljs.highlight(language, code, true).value}</code></pre>`
+        return `<pre class="hljs"><code class="language-${language}">${hljs.highlight(language, code, true).value}</code></pre>`
       } else {
         return xss(hljs.highlightAuto(code).value);
       }

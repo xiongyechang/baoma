@@ -26,18 +26,19 @@
 <script>
 
 import { app, getCurrentWindow } from '@electron/remote';
-import { computed, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { onBeforeRouteLeave, useRoute, useRouter } from "vue-router";
 import { WindowSize, WindowSizeIcon } from '@/constants/constants';
+
 
 export default {
   name: "topbar",
   setup() {
 
-    let currWindow = null,
-        windowSize = WindowSize.normal;
+    let currWindow = null;
+    let windowSize = ref(WindowSize.normal);
 
-    const version = app.getVersion()
+    const version = app.getVersion();
 
     // 获取路由器实例
     const router = useRouter();
@@ -52,15 +53,15 @@ export default {
         var isHidden = document.hidden;
         if (isHidden) {
           if (currWindow.isMinimized()) {
-            windowSize = WindowSize.minimize;
+            windowSize.value = WindowSize.minimize;
           } else {
-            windowSize = WindowSize.normal;
+            windowSize.value = WindowSize.normal;
           }
         } else {
           if (currWindow.isMaximized()) {
-            windowSize = WindowSize.maximize;
+            windowSize.value = WindowSize.maximize;
           } else {
-            windowSize = WindowSize.normal;
+            windowSize.value = WindowSize.normal;
           }
         }
       });
@@ -68,30 +69,26 @@ export default {
 
 
     // 计算属性
-    const fullscreen = computed(() => 
-      windowSize === WindowSize.normal ? WindowSizeIcon.max : WindowSizeIcon.normal
-    );
+    const fullscreen = computed(() => windowSize.value === WindowSize.normal ? WindowSizeIcon.max : WindowSizeIcon.normal);
 
-    const showBackBtn = computed(() => 
-      route.path !== '/'
-    );
+    const showBackBtn = computed(() => route.path !== '/');
 
     const logoMarginLeft = computed(() => route.path === '/' ? { marginLeft: '10px' } : null);
 
     const maximize = () => {
       if (currWindow.isMaximized()) {
         currWindow.unmaximize();
-        windowSize = WindowSize.normal;
+        windowSize.value = WindowSize.normal;
       } else {
         currWindow.maximize();
-        windowSize = WindowSize.maximize;
+        windowSize.value = WindowSize.maximize;
       }
     }
 
     const minimize = () => {
       if (!currWindow.isMinimized()) {
         currWindow.minimize();
-        windowSize = WindowSize.minimize;
+        windowSize.value = WindowSize.minimize;
       }
     }
 

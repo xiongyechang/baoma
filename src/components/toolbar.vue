@@ -1,34 +1,25 @@
 <template>
 	<div class="toolbar">
-		<span v-for="tool in toolbar" class="tool-icon" @click="doAction({
-			action: tool.action
-		})" :key="tool.icon" :title="tool.title">
+		<span v-for="tool in toolbar" :key="tool.action" :id="tool.id" class="tool-icon" :title="tool.title">
 			<el-popover
-				v-if="tool.action === 'image'"
+				v-if="tool.type === 'select'"
 				trigger="hover"
 				placement="bottom"
 				:width="120"
 				v-model:visible="visible">
-					<p class="image-action" @click="doAction({
-						action: 'imageActionUpload'
-					})">
-					上传图片
-					<input type="file" accept="jpg,png,gif,webp,jpeg,avif" style="display: none;">
-					</p>
-					<p class="image-action" @click="doAction({
-						action: tool.action
-					})">添加图片链接</p>
+					<p v-for="el in tool.children" :key="el.action" :id="el.id" class="image-action">{{ el.title }}</p>
 					<template #reference>
 						<i class="iconfont" :class="tool.icon"></i>
 					</template>
 			</el-popover>
 			<i v-else class="iconfont" :class="tool.icon"></i>
 		</span>
+		<input type="file" accept="image/*" style="display: none;">
 	</div>
 </template>
 
 <script>
-	import { reactive, toRefs, getCurrentInstance } from 'vue'
+	import { reactive, toRefs, onMounted, getCurrentInstance } from 'vue'
 	import QiniuMixin from '@/mixins/qiniu'
 	import path from 'path'
 
@@ -37,6 +28,8 @@
 		Link: 'link',
 		Image: 'image',
 		Download: 'download',
+		UploadImage: 'uploadImage',
+		AddImageLink: 'addImageLink',
 		PreviewMode: 'previewMode'
 	}
 
@@ -53,44 +46,73 @@
 
 			const { ctx } = getCurrentInstance()
 
-			const _data = reactive({
+			const store = reactive({
 				Actions,
 				visible: false,
 				toolbar: [{
+					type: 'button',
 					title: '保存',
+					id: 'save-action-btn',
 					icon: 'icon-save',
-					action: 'save'
+					action: Actions.Save
 				}, {
+					type: 'button',
 					title: '链接',
+					id: 'link-action-btn',
 					icon: 'icon-link',
-					action: 'link'
+					action: Actions.Link
 				}, {
+					type: "select",
 					title: '图片',
+					id: 'image-action-btn',
 					icon: 'icon-image',
-					action: 'image'
+					action: Actions.Image,
+					children: [{
+						type: 'button',
+						title: '上传图片',
+						id: 'upload-image-action-btn',
+						icon: 'icon-image',
+						action: Actions.UploadImage
+					}, {
+						type: 'button',
+						title: '添加图片链接',
+						id: 'add-image-action-btn',
+						icon: 'icon-image',
+						action: Actions.AddImageLink
+					}]
 				}, {
+					type: 'button',
 					title: '下载',
+					id: 'download-action-btn',
 					icon: 'icon-download',
-					action: 'download'
+					action: Actions.Download
 				}],
+			});
+
+			onMounted(() => {
+
+				const map = {
+					[Actions.Save]: saveAction,
+					[Actions.Link]: linkAction,
+					[Actions.UploadImage]: uploadImageAction,
+					[Actions.Download]: downloadAction
+				}
+
+				store.toolbar.forEach(function iter(el) {
+					const btn = document.querySelector(`#${el.id}`);
+					btn.addEventListener(`click`, map[el.action], false);
+					return Array.isArray(el.children)&&el.children.length&&el.children.forEach(iter);
+				});
 			})
 
 			const doAction = ({ action, data }) => {
 	            ctx[`${action}Action`]&&ctx[`${action}Action`](data)
 	        }
 
-	        const imageAction = data => {
-	            console.log(data)
-	        }
-
-	        const linkAction = data => {
-	            console.log(data)
-	        }
-
-	        const imageActionUploadAction = async data => {
-	            const inputDOM = document.querySelector('.image-action input[type="file"]')
+			// 上传图片
+	        const uploadImageAction = async () => {
+	            const inputDOM = document.querySelector('input[type="file"]')
 	            if(inputDOM){
-	                
 	                inputDOM.onchange = async event => {
 	                    const file = event.target.files[0]
 	                    if (file) {
@@ -110,30 +132,30 @@
 	            }
 	        }
 
-	        const imageActionUrlAction = data => {
-	            console.log(data)
-	        }
-
-
+			// 保存
 	        const saveAction = data => {
 	        	context.emit('action', {
 	        		action: Actions.Save
 	        	})
 	        }
 
-	        const previewModeAction = data => {
-            	// document.querySelector('.page-content-row').style.display = 'none';
-        	}
+			// 下载
+			const downloadAction = data => {
+				console.log(data);
+			}
+
+			// 锚点链接
+			const linkAction = data => {
+				console.log(data);
+			}
 
 			return {
-				...toRefs(_data),
+				...toRefs(store),
 				doAction,
-	            imageAction,
-	            imageActionUploadAction,
-	            imageActionUrlAction,
-	            linkAction,
 	            saveAction,
-	            previewModeAction
+				uploadImageAction,
+				downloadAction,
+				linkAction
 			}
 		}
 	}
@@ -154,6 +176,7 @@
     text-align: center;
     box-sizing: border-box;
     position: relative;
+	cursor: pointer;
 }
 
 .tool-icon:hover {
