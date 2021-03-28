@@ -19,7 +19,7 @@
         <li class="list-item" :class="{
           current: c === currentListItem
         }" v-for="(c, index) of list" :key="index" @click="rowClick(c)">
-          <el-avatar shape="square" size="small" :src="c.category.avatar"></el-avatar>
+          <img :src="c.category.avatar" loading='lazy' width="32" height="32">
           <div class="title">{{ c.title }}</div>
           <div class="list-index" :index="index">{{index+1}}</div>
         </li>

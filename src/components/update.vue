@@ -16,12 +16,12 @@
 
 <script>
 import { ipcRenderer } from "electron";
-import { ref, reactive, computed, onMounted, toRefs } from 'vue';
+import { ref, onMounted } from 'vue';
 import { Update } from '@/constants/constants';
 export default {
     name: 'update',
     setup() {
-        const updateAvailable = ref(false),
+        let updateAvailable = ref(false),
               message = ref(`有更新啦`),
               updating = ref(false),
               progress = ref(0);

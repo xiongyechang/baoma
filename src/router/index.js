@@ -13,19 +13,29 @@ const routes = [
     },
     components: {
         // 对应 <router-view name="blank"></router-view>
-        blank: () => import(`@/views/login/login.vue`)
-        // resolve => require(['@/views/login/login.vue'], resolve)
+        blank: () => import(`@/pages/login/index.vue`)
+        // resolve => require(['@/pages/login/index.vue'], resolve)
     }
   },
+    // {
+    //     path: '/',
+    //     name: 'index',
+    //     meta: {
+    //         title: '首页',
+    //         keepAlive: false,
+    //         requireAuth: false
+    //     },
+    //     component: () => import(`@/pages/index/index.vue`)
+    // },
   {
       path: '/',
       name: 'web',
       meta: {
-          title: '主页',
+          title: '代码片段页',
           keepAlive: false,
           requireAuth: false
       },
-      component: () => import(`@/views/web/web.vue`)
+      component: () => import(`@/pages/code/index.vue`)
   },
   {
       path: '/admin',
@@ -35,7 +45,7 @@ const routes = [
           keepAlive: false,
           requireAuth: true
       },
-      component: () => import(`@/views/admin/admin.vue`)
+      component: () => import(`@/pages/admin/index.vue`)
   },
   {
       path: '/form/:_id?',
@@ -47,7 +57,7 @@ const routes = [
           requireAuth: true
       },
       component: () => import(`@/components/form.vue`)
-  }, 
+  },
   // {
   //     path: "*",
   //     redirect: {

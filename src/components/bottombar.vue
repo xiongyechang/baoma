@@ -1,14 +1,14 @@
 <template>
 	<div id="bottombar" ref="bottombar">
 		<div class="opts">
-            <span class="opt" title='电量'>
+      <span class="opt" title='电量'>
 				<i class="iconfont" :class="[icon]"></i>
-                <span class="iconfont-title">{{ number }}%</span>
+        <span class="iconfont-title">{{ number }}%</span>
 			</span>
 			<span class="opt" title='网络'>
 				<i class="iconfont" :class="[network]"></i>
 			</span>
-            <update></update>
+      <update></update>
 			<span class="opt-hover opt" title='后台管理系统' @click.stop="goLoginPage">
 				<i class="el-icon-user-solid"></i>
 			</span>
@@ -120,14 +120,14 @@
 		-webkit-app-region: drag;
 		.opts {
 			height: 33px;
-            width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
 			.opt {
 				display: flex;
-                align-items: center;
-                justify-content: center;
+        align-items: center;
+        justify-content: center;
 				width: 40px;
 				height: 33px;
 				line-height: 33px;
@@ -144,9 +144,8 @@
 				background: red;
 			}
 		}
-
-        .iconfont-title {
-            font-size: 12px;
-        }
+    .iconfont-title {
+      font-size: 12px;
+    }
 	}
 </style>
