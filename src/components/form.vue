@@ -8,7 +8,7 @@
                 <textarea ref="textareaRef" v-model="form.content" class="editor scrollbar"></textarea>
             </el-col>
             <el-col class="page-content-row scrollbar" :span="12">
-                <vue3-markdown-it ref="markdownEditorRef" :source='form.content' :plugins='plugins' />
+                <HtmlMarkdown :markdown="form.content"></HtmlMarkdown>
             </el-col>
         </el-row>
         <el-dialog
@@ -53,29 +53,16 @@ import API from '@/api/api'
 import CodeCategory from '@/components/code-category.vue'
 import ToolBar from '@/components/toolbar.vue'
 import _ from 'lodash'
-import fs from 'fs'
 import path from 'path'
 import { HttpResponseCode } from '@/constants/constants'
 import { ElMessage  } from 'element-plus'
 import { shell } from 'electron'
-import markdownItMultimdTable from 'markdown-it-multimd-table'
-import markdownItAbbr from 'markdown-it-abbr'
-import markdownItAnchor from 'markdown-it-anchor'
-import markdownItDeflist from 'markdown-it-deflist'
-import markdownItEmoji from 'markdown-it-emoji'
-import markdownItFootnote from 'markdown-it-footnote'
-import markdownItHighlightjs from 'markdown-it-highlightjs'
-import markdownItIns from 'markdown-it-ins'
-import markdownItMark from 'markdown-it-mark'
-import markdownItSub from 'markdown-it-sub'
-import markdownItSup from 'markdown-it-sup'
-import markdownItTaskLists from 'markdown-it-task-lists'
-import markdownItTocDoneRight from 'markdown-it-toc-done-right'
+import HtmlMarkdown from '@/components/html-markdown'
 
 
 export default {
     name: "admin",
-    components : { CodeCategory, ToolBar },
+    components : { CodeCategory, ToolBar, HtmlMarkdown },
     props: {
         _id: String
     },
@@ -85,36 +72,9 @@ export default {
 
         const textareaRef = ref(null)
 
-        const _data = reactive({
+        const store = reactive({
             dialogVisible: false,
             list:[],
-            plugins: [{ 
-                plugin: markdownItMultimdTable
-            }, {
-                plugin: markdownItAbbr
-            }, {
-                plugin: markdownItAnchor
-            }, {
-                plugin: markdownItDeflist
-            }, {
-                plugin: markdownItEmoji
-            }, {
-                plugin: markdownItFootnote
-            }, {
-                plugin: markdownItHighlightjs
-            }, {
-                plugin: markdownItIns
-            }, {
-                plugin: markdownItMark
-            }, {
-                plugin: markdownItSub
-            }, {
-                plugin: markdownItSup
-            }, {
-                plugin: markdownItTaskLists
-            }, {
-                plugin: markdownItTocDoneRight
-            }],
             form: {
                 _id: '',
                 title: '',
@@ -137,13 +97,13 @@ export default {
             }]
         })
 
-        _data.form._id = props._id;
+        store.form._id = props._id;
 
         const getCodeSnippet = async _id => {
             try {
                 const { code, message, data } = await API.getCodeSnippet(_id);
                 if (code === HttpResponseCode.OK) {
-                    _data.form = data;
+                    store.form = data;
                 } else {
                     ElMessage.error(message);
                 }
@@ -156,7 +116,7 @@ export default {
             try {
                 const { code, message, data: { rows } } = await API.getCodeSnippets(page, limit)
                 if (code === HttpResponseCode.OK) {
-                    _data.list = formatData(rows)
+                    store.list = formatData(rows)
                 } else {
                     ElMessage.error(message)
                 }
@@ -169,7 +129,7 @@ export default {
             try {
                 const { code, message, data: { rows } } = await API.getCodeCategories()
                 if (code === HttpResponseCode.OK) {
-                    _data.categories = rows
+                    store.categories = rows
                 } else {
                     ElMessage.error(message)
                 }
@@ -209,16 +169,16 @@ export default {
         const publish = () => {
             markdownEditorRef.value.validate(async valid => {
                 if (valid) {
-                    const request = _data.form._id ? API.updateCodeSnippet : API.addCodeSnippet
+                    const request = store.form._id ? API.updateCodeSnippet : API.addCodeSnippet
                     try {
                         const reg = /^# ([\u4e00-\u9fa5_a-zA-Z0-9]+)\n?/
-                        if(reg.test(_data.form.content)){
-                            _data.form.title = RegExp.$1
+                        if(reg.test(store.form.content)){
+                            store.form.title = RegExp.$1
                         }
-                        const { code, message, data} = await request(_data.form)
+                        const { code, message, data} = await request(store.form)
                         if (code === HttpResponseCode.OK) {
                             ElMessage.success(message)
-                            Object.assign(_data.form, data)
+                            Object.assign(store.form, data)
                         } else {
                             ElMessage.error(message)
                         }
@@ -249,7 +209,7 @@ export default {
 
         const doAction = ({ action, data }) => {
             switch(action) {
-                case 'save':_data.dialogVisible = true;break;
+                case 'save':store.dialogVisible = true;break;
                 case 'upload': 
                     if(!data){
                         console.log("上传失败")
@@ -258,7 +218,7 @@ export default {
                     const { fileName, filePath } = data;
                     const imageCode = `![${fileName}](${filePath})`;
                     const position = getCursortPosition(textareaRef.value)
-                    _data.form.content = _data.form.content.slice(0, position)+ imageCode +_data.form.content.slice(position);break;
+                    store.form.content = store.form.content.slice(0, position)+ imageCode +store.form.content.slice(position);break;
             }
         }
 
@@ -273,7 +233,7 @@ export default {
         return {
             markdownEditorRef,
             textareaRef,
-            ...toRefs(_data),
+            ...toRefs(store),
             getCodeSnippet,
             getCodeSnippets,
             getCodeCategories,

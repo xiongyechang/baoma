@@ -1,16 +1,22 @@
 <template>
-  <div class="markdown" id="markdown" v-html="compiledMarkdown" v-highlight></div>
+  <vue3-markdown-it :source='markdown' :plugins='plugins' />
 </template>
 
 <script>
-import { computed, onMounted, onUnmounted } from 'vue'; 
-import marked from 'marked';
-import hljs from 'highlight.js';
-import { parse } from 'flowchart.js';
-import xss from "xss";
-import { Button } from "@/constants/constants";
-import { shell } from 'electron';
-import { dialog } from '@electron/remote';
+import { ref, reactive, toRefs, onMounted, onUnmounted } from 'vue'; 
+import markdownItMultimdTable from 'markdown-it-multimd-table'
+import markdownItAbbr from 'markdown-it-abbr'
+import markdownItAnchor from 'markdown-it-anchor'
+import markdownItDeflist from 'markdown-it-deflist'
+import markdownItEmoji from 'markdown-it-emoji'
+import markdownItFootnote from 'markdown-it-footnote'
+import markdownItHighlightjs from 'markdown-it-highlightjs'
+import markdownItIns from 'markdown-it-ins'
+import markdownItMark from 'markdown-it-mark'
+import markdownItSub from 'markdown-it-sub'
+import markdownItSup from 'markdown-it-sup'
+import markdownItTaskLists from 'markdown-it-task-lists'
+import markdownItTocDoneRight from 'markdown-it-toc-done-right'
 
 export default {
   name: "html-markdown",
@@ -18,75 +24,41 @@ export default {
     markdown: String
   },
   setup(props, context) {
-    let markdown = null;
 
-    const compiledMarkdown = computed(() => marked(props.markdown, { sanitize: false }))
+    const markdownEditorRef = ref(null);
 
-    const clickHandler = event => {
-      const element = event.target;
-      if (element.tagName.toLowerCase() === 'a') {
-        event.preventDefault();
-        const result = dialog.showMessageBoxSync({
-          title: '通知',
-          type: 'question',
-          message: `是否使用默认浏览器打开该链接`,
-          buttons: [Button.Cancel, Button.OK]
-        });
-        if (result) {
-          shell.openExternal(element.href);
-        }
-      }
-    }
-
-    onMounted(() => {
-      markdown = document.querySelector(`#markdown`)
-      markdown.addEventListener("click", clickHandler, true);
-    })
-
-    onUnmounted(() => {
-      markdown.removeEventListener("click", clickHandler);
-    })
-
-    const renderer = new marked.Renderer();
-    renderer.code = (code, language) => {
-      if (language === 'flow') {// 流程图
-        const dom = document.createElement('div');
-        const flowchart = parse(code);
-        flowchart.drawSVG(dom);
-        return dom.innerHTML
-      } else if (language === 'seq' || language === 'gantt') {
-        return hljs.highlightAuto(code).value
-      } else if (language) {
-        // 默认解析
-        return `<pre class="hljs"><code class="language-${language}">${hljs.highlight(language, code, true).value}</code></pre>`
-      } else {
-        return xss(hljs.highlightAuto(code).value);
-      }
-    }
-
-    marked.setOptions({
-      renderer,
-      gfm: true,
-      tables: true,
-      breaks: false,
-      pedantic: false,
-      sanitize: false,
-      smartLists: true,
-      smartypants: false,
-      highlight: function (code, language) {
-        if (language && hljs.getLanguage(language)) {
-          return hljs.highlight(language, code, true).value;
-        } else {
-          return hljs.highlightAuto(code).value;
-        }
-      }
+    const store = reactive({
+      plugins: [{ 
+          plugin: markdownItMultimdTable
+      }, {
+          plugin: markdownItAbbr
+      }, {
+          plugin: markdownItAnchor
+      }, {
+          plugin: markdownItDeflist
+      }, {
+          plugin: markdownItEmoji
+      }, {
+          plugin: markdownItFootnote
+      }, {
+          plugin: markdownItHighlightjs
+      }, {
+          plugin: markdownItIns
+      }, {
+          plugin: markdownItMark
+      }, {
+          plugin: markdownItSub
+      }, {
+          plugin: markdownItSup
+      }, {
+          plugin: markdownItTaskLists
+      }, {
+          plugin: markdownItTocDoneRight
+      }],
     });
 
-    const htmlClickHandler = e => e.stopDefault()
-    
     return {
-      compiledMarkdown,
-      htmlClickHandler
+      ...toRefs(store)
     }
   }
 }
