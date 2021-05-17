@@ -63,7 +63,7 @@
 	import API from "@/api/api"
 	import JSEncrypt from "jsencrypt"
 	import { HttpResponseCode } from '@/constants/constants'
-	import ElMessage from 'element-plus'
+	import { ElMessage } from 'element-plus'
 	import { useStore } from 'vuex'
 	import { useRoute, useRouter } from "vue-router"
 
