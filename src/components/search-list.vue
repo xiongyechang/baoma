@@ -19,7 +19,7 @@
         <li class="list-item" :class="{
           current: c === currentListItem
         }" v-for="(c, index) of list" :key="index" @click="rowClick(c)">
-          <img :src="c.category.avatar" loading='lazy' width="32" height="32">
+          <img :src="getCategoryAvatar(c.category)" loading='lazy' width="32" height="32">
           <div class="title">{{ c.title }}</div>
           <div class="list-index" :index="index">{{index+1}}</div>
         </li>
@@ -35,10 +35,12 @@ import { ElMessage } from 'element-plus'
 import API from '@/api/api';
 import { HttpResponseCode } from '@/constants/constants'
 import CodeCategory from '@/components/code-category.vue'
+import UtilsMixin from '@/mixins/utils';
 
 export default {
   name: "search-list",
   components : { CodeCategory },
+  mixins: [UtilsMixin],
   setup(props, context) {
     
     const data = reactive({

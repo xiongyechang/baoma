@@ -30,17 +30,28 @@ export default {
             // 检查是否有更新
             ipcRenderer.send(Update.CheckForUpdate);
 
-            // 有更新
-            ipcRenderer.on(Update.IsUpdate, () => {
+            const methods = [{
+              key: Update.IsUpdate, // 有更新
+              method: () => {
                 updateAvailable.value = true;
-            });
-
-            // 正在更新
-            ipcRenderer.on(Update.DownloadProgress, (event, progress) => {
+              }
+            }, {
+              key: Update.DownloadProgress, // 正在更新
+              method: (event, progress) => {
                 if (!updating.value) {
-                    updating.value = true;
+                  updating.value = true;
                 }
                 progress.value = (progress.percent.toFixed(2));
+              }
+            }, {
+              key: Update.Message, // 有消息
+              method: data => {
+                console.log(data);
+              }
+            }]
+
+            methods.forEach(({ key, method }) => {
+              ipcRenderer.on(key, method);
             });
         });
 

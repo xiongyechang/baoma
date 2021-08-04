@@ -1,7 +1,5 @@
 <template>
-    <div>
-        <tree-table :treeData="treeData" :default-expanded-keys="defaultExpandedKeys"></tree-table>
-    </div>
+  <tree-table :treeData="treeData" :default-expanded-keys="defaultExpandedKeys"></tree-table>
 </template>
 
 <script>

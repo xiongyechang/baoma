@@ -1,7 +1,9 @@
 <template>
     <top-bar></top-bar>
-    <router-view class="app-router-view"></router-view>
-    <router-view class="app-router-view" name="blank"></router-view>
+    <main>
+      <router-view />
+      <router-view name="blank" />
+    </main>
     <bottom-bar></bottom-bar>
 </template>
 
@@ -18,4 +20,8 @@ export default {
 </script>
 
 <style>
+main {
+  height: 100%;
+  overflow: hidden;
+}
 </style>

@@ -1,4 +1,4 @@
-const { autoUpdater, CancellationToken } = require("electron-updater");
+const { autoUpdater } = require("electron-updater");
 const { BrowserWindow, ipcMain } = require("electron");
 import { Update } from "@/constants/constants";
 
@@ -6,7 +6,7 @@ const { baseURL } = require("../config/config");
 
 const mainWindow = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0];
 
-const cancellationToken = new CancellationToken();
+let cancellationToken = null;
 
 //执行自动更新检查
 const feedUrl = `${baseURL}/api/update/`; // 更新包位置
@@ -28,7 +28,7 @@ autoUpdater.on(Update.Error, function(error) {
     msg: message.error,
   });
 });
-autoUpdater.on(Update.checkingForUpdate, function() {
+autoUpdater.on(Update.CheckingForUpdate, function() {
   sendUpdateMessage({
     code: 1,
     msg: message.checking,
@@ -41,7 +41,7 @@ autoUpdater.on(Update.UpdateAvailable, function(info) {
 ipcMain.on(Update.IsUpdate, (event, data) => {
   console.log(data);
   if (data) {
-    autoUpdater.downloadUpdate(cancellationToken); // 手动下载
+    autoUpdater.downloadUpdate(); // 手动下载
   }
 });
 // 取消下载
@@ -86,7 +86,9 @@ autoUpdater.on(Update.UpdateDownloaded, function(
 
 ipcMain.on(Update.CheckForUpdate, () => {
     //放外面的话启动客户端执行自动更新检查
-    autoUpdater.checkForUpdates();
+    autoUpdater.checkForUpdates().then((downloadPromise) => {
+      cancellationToken = downloadPromise.cancellationToken;
+    })
 });
 
 function sendUpdateMessage(param) {

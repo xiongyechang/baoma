@@ -10,6 +10,7 @@
       </el-row>
       <el-tree
         ref="treeRef"
+        :indent="0"
         :data="treeData"
         :props="treeOptions"
         node-key="_id"
@@ -45,13 +46,13 @@
         <el-table-column type="selection" width="40"></el-table-column>
         <el-table-column type="" label="类型" width="50">
           <template #default="scope">
-            <img :src="scope.row.category.avatar" :alt="scope.row.title" width="20" height="20">
+            <img :src="getCategoryAvatar(scope.row.category)" alt="" width="20" height="20">
           </template>
         </el-table-column>
         <el-table-column type="" label="编号" width="50">
           <template #default="scope">{{ scope.$index + 1 }}</template>
         </el-table-column>
-        <el-table-column prop="title" width="300" label="标题" show-overflow-tooltip></el-table-column>
+        <el-table-column prop="title" label="标题" show-overflow-tooltip></el-table-column>
         <el-table-column width="120" label="查看/喜欢/收藏">
           <template #default="scope">
             {{ scope.row.viewed }}/{{ scope.row.liked }}/{{ scope.row.collected }}
@@ -89,6 +90,7 @@
   import { HttpResponseCode } from '@/constants/constants';
   import { ElMessage } from 'element-plus'
   import { useRoute, useRouter } from "vue-router";
+  import UtilsMixin from '@/mixins/utils';
 
   const ADD_ID_LENGTH = 8; // 添加的节点 _id 的长度
 
@@ -102,7 +104,7 @@
       },
       defaultExpandedKeys: Array
     },
-    mixins: [qiniuMixin],
+    mixins: [qiniuMixin, UtilsMixin],
     setup(props, context) {
 
       // 获取路由器实例
@@ -329,6 +331,10 @@
 </script>
 
 <style lang="scss">
+
+.el-tree-node__expand-icon {
+  visibility: hidden;
+}
 
 .post-title__link{
   cursor: pointer;

@@ -35,6 +35,7 @@ async function createWindow() {
   })
 
   require('@electron/remote/main').initialize()
+  require("./main/update")
 
   if (process.env.WEBPACK_DEV_SERVER_URL) {
     // Load the url of the dev server if in development mode

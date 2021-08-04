@@ -91,9 +91,11 @@
 
             const goLoginPage = () => {
                 const name = route.name;
-                if(name !== 'admin'){
-                    router.push({ name: "admin" });
-                }                
+                if(name === 'admin') {
+                  router.replace({ name: 'web' })
+                } else {
+                  router.push({ name: "admin" });
+                }
             }
 
 

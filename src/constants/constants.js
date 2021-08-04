@@ -17,7 +17,8 @@ export const Update = {
     Error: "error", // 错误
     UpdateAvailable: "update-available",
     UpdateNotAvailable: "update-not-available",
-    UpdateDownloaded: "update-downloaded"
+    UpdateDownloaded: "update-downloaded",
+    Message: "message"
 }
 
 export const Button = {

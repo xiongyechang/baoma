@@ -48,16 +48,15 @@
 </template>
 
 <script>
-import { ref, reactive, computed, toRefs, onMounted } from 'vue'
+import { ref, reactive, toRefs } from 'vue'
 import API from '@/api/api'
 import CodeCategory from '@/components/code-category.vue'
 import ToolBar from '@/components/toolbar.vue'
-import _ from 'lodash'
-import path from 'path'
 import { HttpResponseCode } from '@/constants/constants'
 import { ElMessage  } from 'element-plus'
 import { shell } from 'electron'
 import HtmlMarkdown from '@/components/html-markdown'
+import { useRouter } from "vue-router";
 
 
 export default {
@@ -71,6 +70,8 @@ export default {
         const markdownEditorRef = ref(null)
 
         const textareaRef = ref(null)
+
+        const router = useRouter();
 
         const store = reactive({
             dialogVisible: false,
@@ -178,7 +179,10 @@ export default {
                         const { code, message, data} = await request(store.form)
                         if (code === HttpResponseCode.OK) {
                             ElMessage.success(message)
-                            Object.assign(store.form, data)
+                            Object.assign(store.form, {
+                              _id: data._id
+                            })
+                            router.back();
                         } else {
                             ElMessage.error(message)
                         }
