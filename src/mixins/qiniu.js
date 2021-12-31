@@ -1,6 +1,7 @@
 import * as qiniu from 'qiniu-js';
 import { mapGetters, mapActions } from 'vuex';
 import randomstring from 'randomstring';
+import mime from 'mime';
 
 export default {
   created() {
@@ -30,7 +31,7 @@ export default {
         var putExtra = {
           fname: file.name,
           params: {},
-          mimeType: [] || null
+          mimeType: mime.getType(file.name) || null
         };
         var observable = qiniu.upload(
           file,

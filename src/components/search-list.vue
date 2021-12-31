@@ -222,7 +222,7 @@ export default {
   transform: rotateZ(30deg);
   color: #e3e3e3;
   font-family: 'fira code retina';
-  mix-blend-mode: lighten;
+  // mix-blend-mode: lighten;
   z-index: 2;
 }
 

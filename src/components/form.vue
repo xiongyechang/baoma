@@ -1,77 +1,56 @@
 <template>
-    <div class="admin-page">
-        <el-row class="admin-page-toolbar">
-            <ToolBar @action="doAction"></ToolBar>
-        </el-row>
-        <el-row class="admin-page-content">
-            <el-col :span="12">
-                <textarea ref="textareaRef" v-model="form.content" class="editor scrollbar"></textarea>
-            </el-col>
-            <el-col class="page-content-row scrollbar" :span="12">
-                <HtmlMarkdown :markdown="form.content"></HtmlMarkdown>
-            </el-col>
-        </el-row>
-        <el-dialog
-        title="提示"
-        v-model="dialogVisible"
-        :append-to-body="true"
-        width="30%">
-        <el-form ref="markdownEditorRef" :model="form" :rules="rules" label-width="80px">
-            <el-form-item label="禁用" prop="disabled" required>
-                <el-select filterable v-model="form.disabled" style="width: 100%;" placeholder="是否禁用">
-                    <el-option v-for="item of disabledList" :key="item.value" :label="item.label" :value="item.value"></el-option>
-                </el-select>
-            </el-form-item>
-            <el-form-item label="分类" prop="category" required>
-                <el-select filterable v-model="form.category" style="width: 100%;" placeholder="请选择分类">
-                    <el-option v-for="item of categories" :key="item._id" :label="item.title" :value="item._id">
-                        <code-category :data="item"></code-category>
-                    </el-option>
-                </el-select>
-            </el-form-item>
-            <el-form-item label="关联" prop="relations">
-                <el-select filterable multiple v-model="form.relations" style="width: 100%;" placeholder="请选择相关项">
-                    <el-option v-for="item of list" :key="item._id" :label="item.title" :value="item._id">
-                        <code-category :data="item"></code-category>
-                    </el-option>
-                </el-select>
-            </el-form-item>
-        </el-form>
-        <template #footer>
-            <span class="dialog-footer">
-                <el-button @click="dialogVisible = false">取 消</el-button>
-                <el-button type="primary" @click="publish">确 定</el-button>
-            </span>
-          </template>
-    </el-dialog>
-    </div>
+    <HtmlMarkdown :value="form.content" @save="onSave"></HtmlMarkdown>
 </template>
 
 <script>
-import { ref, reactive, toRefs } from 'vue'
+import { 
+    reactive,
+    toRefs,
+    getCurrentInstance,
+    defineAsyncComponent,
+} from 'vue'
 import API from '@/api/api'
 import CodeCategory from '@/components/code-category.vue'
 import ToolBar from '@/components/toolbar.vue'
 import { HttpResponseCode } from '@/constants/constants'
-import { ElMessage  } from 'element-plus'
-import { shell } from 'electron'
-import HtmlMarkdown from '@/components/html-markdown'
-import { useRouter } from "vue-router";
-
+import { ElMessage, ElNotification } from 'element-plus'
+import Empty from './empty.vue'
 
 export default {
-    name: "admin",
-    components : { CodeCategory, ToolBar, HtmlMarkdown },
-    props: {
-        _id: String
+    name: "form",
+    components : { 
+        CodeCategory,
+        ToolBar,
+        HtmlMarkdown: defineAsyncComponent({
+             // 工厂函数
+            loader: () => import('@/components/html-markdown'),
+            errorComponent: Empty,
+            loadingComponent: Empty,
+            delay: 0,
+            timeout: 3000,
+            // 定义组件是否可挂起 | 默认值：true
+            suspensible: false,
+            onError(error, retry, fail, attempts) {
+                if (error.message.match(/fetch/) && attempts <= 3) {
+                    // 请求发生错误时重试，最多可尝试 3 次
+                    retry()
+                } else {
+                    // 注意，retry/fail 就像 promise 的 resolve/reject 一样：
+                    // 必须调用其中一个才能继续错误处理。
+                    fail()
+                }
+            }
+        })
     },
-    setup(props, context) {
+    props: {
+        _id: String,
+        category: String,
+    },
+    setup(props) {
 
-        const markdownEditorRef = ref(null)
+        const instance = getCurrentInstance();
 
-        const textareaRef = ref(null)
-
-        const router = useRouter();
+        console.log(instance);
 
         const store = reactive({
             dialogVisible: false,
@@ -80,7 +59,7 @@ export default {
                 _id: '',
                 title: '',
                 disabled: false,
-                category: '',
+                category: props.category,
                 relations: [],
                 content: ''
             },
@@ -146,83 +125,30 @@ export default {
             }))
         }
 
-        const markdownClicked = event => {
-            event.preventDefault();
-            const element = event.target;
-            if(element && element.tagName.toLowerCase() === 'a'){
-                shell.openExternal(element.href)
-            }
-        }
-
-        const save = html => {
-            if(!html.trim()) {
-                ElMessage.warning("文章内容不能为空")
-                return
-            }
-            try{
-                localStorage.setItem("lastest-note", html)
-                ElMessage.success("草稿保存成功")
-            }catch{
-                ElMessage.error("草稿保存失败")
-            }
-        }
-
-        const publish = () => {
-            markdownEditorRef.value.validate(async valid => {
-                if (valid) {
-                    const request = store.form._id ? API.updateCodeSnippet : API.addCodeSnippet
-                    try {
-                        const reg = /^# ([\u4e00-\u9fa5_a-zA-Z0-9]+)\n?/
-                        if(reg.test(store.form.content)){
-                            store.form.title = RegExp.$1
-                        }
-                        const { code, message, data} = await request(store.form)
-                        if (code === HttpResponseCode.OK) {
-                            ElMessage.success(message)
-                            Object.assign(store.form, {
-                              _id: data._id
-                            })
-                            router.back();
-                        } else {
-                            ElMessage.error(message)
-                        }
-                    } catch (error) {
-                        console.error(error)
-                    }
-
-                } else {
-                    return false;
+        const onSave = async (value) => {
+            store.form.content = value;
+            const request = store.form._id ? API.updateCodeSnippet : API.addCodeSnippet
+            try {
+                const reg = /^# ([\u4e00-\u9fa5_a-zA-Z0-9]+)\n?/
+                if(reg.test(store.form.content)){
+                    store.form.title = RegExp.$1
                 }
-            });
-        }
-
-        const getCursortPosition = obj => {
-            var cursorIndex = 0;
-            if (document.selection) {
-                // IE Support
-                obj.focus();
-                var range = document.selection.createRange();
-                range.moveStart('character', -obj.value.length);
-                cursorIndex = range.text.length;
-            } else if (obj.selectionStart || obj.selectionStart==0) {
-                // another support
-                cursorIndex = obj.selectionStart;
-            }
-            return cursorIndex;
-        }
-
-        const doAction = ({ action, data }) => {
-            switch(action) {
-                case 'save':store.dialogVisible = true;break;
-                case 'upload': 
-                    if(!data){
-                        console.log("上传失败")
-                        return
-                    }
-                    const { fileName, filePath } = data;
-                    const imageCode = `![${fileName}](${filePath})`;
-                    const position = getCursortPosition(textareaRef.value)
-                    store.form.content = store.form.content.slice(0, position)+ imageCode +store.form.content.slice(position);break;
+                const { code, message, data} = await request(store.form)
+                if (code === HttpResponseCode.OK) {
+                    Object.assign(store.form, {
+                        _id: data._id,
+                    });
+                    ElNotification({
+                        message,
+                        duration: 3000,
+                        type: 'success',
+                        offset: 100
+                    });
+                } else {
+                    ElMessage.error(message)
+                }
+            } catch (error) {
+                console.error(error)
             }
         }
 
@@ -235,18 +161,11 @@ export default {
         getCodeCategories()
 
         return {
-            markdownEditorRef,
-            textareaRef,
             ...toRefs(store),
             getCodeSnippet,
             getCodeSnippets,
             getCodeCategories,
-            formatData,
-            markdownClicked,
-            save,
-            publish,
-            doAction,
-            getCursortPosition
+            onSave,
         }
 
     }
@@ -254,50 +173,4 @@ export default {
 </script>
 
 <style lang="css" scoped>
-.admin-page {
-    height: 100%;
-    width: 100%;
-    text-align: left;
-}
-
-.admin-page-toolbar {
-    height: 36px;
-    background-color: lightgray;
-}
-
-
-
-.admin-page-content {
-    height: calc(100% - 36px);
-    overflow: hidden;
-}
-
-.page-content-row {
-    height: 100%;
-    padding: 0 10px 10px 10px;
-    box-sizing: border-box;
-    overflow: auto;
-}
-
-.opt {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    height: 40px;
-    border-bottom: 1px solid #f2f6fc;
-    padding: 1px 10px;
-}
-
-.editor {
-    width: 100%;
-    height: 100%;
-    outline: none;
-    border: none;
-    font-size: 18px;
-    line-height: 1.5em;
-    color: #333;
-    padding: 10px;
-    box-sizing: border-box;
-    resize: none;
-}
 </style>

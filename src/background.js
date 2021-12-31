@@ -4,6 +4,7 @@ import { app, protocol, BrowserWindow } from 'electron'
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
 import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer'
 const isDevelopment = process.env.NODE_ENV !== 'production'
+import * as path from 'path';
 
 // Scheme must be registered before the app is ready
 protocol.registerSchemesAsPrivileged([
@@ -15,13 +16,14 @@ async function createWindow() {
   const win = new BrowserWindow({
     width: 1366,
     height: 768,
-    title: "代码片段管理端",
+    title: "baoma",
     frame: false,
     // transparent: true,
     minWidth: 1366,
     minHeight: 768,
     maximizable: true,
     minimizable: true,
+    icon: path.join(__dirname, "..", "public", "favicon.ico"),
     webPreferences: {
       // Use pluginOptions.nodeIntegration, leave this alone
       // See nklayman.github.io/vue-cli-plugin-electron-builder/guide/security.html#node-integration for more info

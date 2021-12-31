@@ -48,8 +48,11 @@ const routes = [
       component: () => import(`@/pages/admin/index.vue`)
   },
   {
-      path: '/form/:_id?',
-      props: true,
+      path: '/form',
+      props: route => ({
+        _id:  route.query._id,
+        category: route.query.category
+      }),
       name: 'form',
       meta: {
           title: '表单',

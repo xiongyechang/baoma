@@ -37,6 +37,7 @@
 				:default-expanded-keys="defaultExpandedKeys"
 				:highlight-current="true"
 				@node-click="nodeClickHandler"
+				v-loading="!treeData.length"
 			>
 				<template class="custom-tree-node" #default="{ data }">
 					<template v-if="data.editable">
@@ -101,6 +102,7 @@
 				@selection-change="selectionChange"
 				size="mini"
 				height="100%"
+				v-loading="tableLoading"
 			>
 				<el-table-column type="selection" width="40"></el-table-column>
 				<el-table-column type="" label="类型" width="50">
@@ -189,6 +191,8 @@
 			// route是响应式对象,可监控器变化
 			const route = useRoute();
 
+			const tableLoading = ref(false);
+
 			const _data = reactive({
 				selectedTreeNode: null, // 点击树节点后才会有值
 				selectedCodeSnippet: null,
@@ -230,6 +234,7 @@
 			};
 
 			const getCodeSnippetsByCategory = async (_id) => {
+				tableLoading.value = true;
 				const root = treeRef.value.root.childNodes[0];
 				let response = null;
 				try {
@@ -257,6 +262,8 @@
 					}
 				} catch (error) {
 					console.error(error);
+				} finally {
+						tableLoading.value = false;
 				}
 			};
 
@@ -366,9 +373,29 @@
 			};
 
 			const addCodeSnippet = () => {
+				if (!_data.selectedTreeNode) {
+					ElMessage({
+						type: `warning`,
+						message: `请先选择一个树节点【除了全部节点之外】`
+					})
+					return;
+				} else {
+					if(_data.selectedTreeNode.data.title === `全部`) {
+						ElMessage({
+							type: `warning`,
+							message: `请先选择一个树节点【除了全部节点之外】`
+						});
+						return;
+					};
+				}
+				const { _id: category } = _data.selectedTreeNode.data;
 				_data.selectedCodeSnippet = null;
+
 				router.push({
 					name: "form",
+					query: {
+						category
+					}
 				});
 			};
 
@@ -384,6 +411,10 @@
 							} else {
 								getCodeSnippets();
 							}
+							ElMessage({
+								type: 'success',
+								message: `删除成功`
+							})
 						})
 						.catch(console.error);
 				}
@@ -392,7 +423,7 @@
 				_data.selectedCodeSnippet = codesnippet;
 				router.push({
 					name: "form",
-					params: {
+					query: {
 						_id: codesnippet._id,
 					},
 				});
@@ -405,6 +436,7 @@
 
 			return {
 				treeRef,
+				tableLoading,
 				...toRefs(_data),
 				dayjs,
 				rowClass,

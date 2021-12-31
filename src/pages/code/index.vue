@@ -5,7 +5,7 @@
 		</el-col>
 		<el-col class="content full-height scrollbar" :span="18">
 			<template v-if="markdown">
-				<HtmlMarkdown :markdown="markdown" />
+				<PreviewMarkdown :value="markdown" />
 				<ElButton
 					class="fixed-button"
 					type="primary"
@@ -24,7 +24,7 @@
 <script>
 	import { ref, defineComponent, onActivated } from "vue";
 	import SearchList from "@/components/search-list";
-	import HtmlMarkdown from "@/components/html-markdown";
+	import PreviewMarkdown from "@/components/preview-markdown";
 	import API from "@/api/api";
 	import { ElMessage } from "element-plus";
 	import { useRouter } from "vue-router";
@@ -33,7 +33,7 @@
 
 	export default defineComponent({
 		name: "web",
-		components: { SearchList, HtmlMarkdown, Empty },
+		components: { SearchList, PreviewMarkdown, Empty },
 		setup() {
 			const markdown = ref(``);
 
@@ -63,7 +63,7 @@
 			const edit = async () => {
 				router.push({
 					name: "form",
-					params: {
+					query: {
 						_id: id.value,
 					},
 				});

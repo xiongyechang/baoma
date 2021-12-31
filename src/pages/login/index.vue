@@ -237,6 +237,7 @@
 		display: flex;
 		justify-content: center;
 		align-items: center;
+		height: 100%;
 		.main {
 			text-align: center;
 			background-color: #ffffff;
