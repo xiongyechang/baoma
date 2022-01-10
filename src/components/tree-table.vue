@@ -1,7 +1,7 @@
 <template>
 	<div class="grid">
 		<div>
-			<el-row :gutter="10" style="padding: 5px 5px 5px 25px; height: 48px">
+			<el-row :gutter="10" style="padding: 5px 5px 5px 25px;height:40px;">
 				<el-col>
 					<el-button
 						type="primary"
@@ -28,6 +28,7 @@
 			</el-row>
 			<el-tree
 				ref="treeRef"
+				style="height: calc(100% - 40px);overflow:auto;"
 				:indent="0"
 				:data="treeData"
 				:props="treeOptions"
