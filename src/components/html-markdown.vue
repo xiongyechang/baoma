@@ -112,8 +112,8 @@ export default defineComponent({
 					}
 				},
 				cache: {
-          enable: false,
-        },
+		          	enable: false,
+		        },
 				input: (v) => {
 					emit('update:value', v);
 					emit('change', v);
