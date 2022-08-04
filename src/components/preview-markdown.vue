@@ -1,5 +1,5 @@
 <template>
-  <div class="markdown-viewer" v-html="html" v-highlight />
+  <div class="markdown-viewer" @click="onClick" v-html="html" v-highlight />
 </template>
 
 <script>
@@ -9,6 +9,8 @@ import hljs from 'highlight.js';
 import 'highlight.js/styles/monokai-sublime.css';
 import CopyButtonPlugin from 'highlightjs-copy';
 import 'highlightjs-copy/styles/highlightjs-copy.css';
+import { shell } from 'electron';
+import { ElMessage } from 'element-plus';
 
 hljs.addPlugin(new CopyButtonPlugin())
 
@@ -55,8 +57,21 @@ export default defineComponent({
       html.value = marked(props.value);
     });
 
+    const onClick = (event) => {
+      event.preventDefault();
+      const dom = event.target;
+      if (dom.nodeName.toLowerCase() === 'a') {
+        try {
+          shell.openExternal(dom.href);
+        } catch (error) {
+          ElMessage.error('打开默认浏览器失败');
+        }
+      }
+    }
+
     return {
-      html
+      html,
+      onClick,
     }
   }
 })
@@ -80,9 +95,15 @@ export default defineComponent({
         z-index: 9999;
         margin-bottom: 8px;
       }
+      code.hljs {
+        margin-bottom: 10px;
+      }
+      p {
+        line-height: 2rem;
+      }
 
       li { 
-        line-height: 1.5;
+        line-height: 2rem;
       }
 
       table {
@@ -130,6 +151,10 @@ export default defineComponent({
       img {
         max-width: 100%;
         height: auto;
+      }
+
+      h1, h2, h3, h4, h5, h6 {
+        margin: 5px 0;
       }
     }
 
