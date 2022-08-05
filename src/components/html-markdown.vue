@@ -1,5 +1,5 @@
 <template>
-	<div :ref="ref => markdownRef=ref"></div>
+	<div :ref="ref => markdownRef=ref" @click="onClick"></div>
 </template>
 
 <script>
@@ -16,6 +16,7 @@ import Vditor from 'vditor';
 import 'vditor/dist/index.css';
 import QiniuMixin from "../mixins/qiniu";
 import isImage from 'is-image';
+import { shell } from 'electron';
 
 let markdownInstance = {};
 
@@ -154,9 +155,22 @@ export default defineComponent({
 			});
 		}
 
+		const onClick = (event) => {
+			event.preventDefault();
+			const dom = event.target;
+			if (dom.nodeName.toLowerCase() === 'a') {
+				try {
+					shell.openExternal(dom.href);
+				} catch (error) {
+					ElMessage.error('打开默认浏览器失败');
+				}
+			}
+		}
+
 
 		return {
 			markdownRef,
+			onClick,
 		};
 	},
 });
