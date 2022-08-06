@@ -3,7 +3,7 @@
         <el-badge :value="message" :hidden="!updateAvailable">
             <i v-if="!updating" @click="update" class="iconfont icon-update"></i>
             <div v-else @dblclick="cancelUpdate" style="overflow: hidden;">
-                <div class="move">
+                <div>
                     <span class="iblock">{{ progress }}%</span>
                     <span class="iblock update-rotate">
                         <i class="iconfont icon-update"></i>
@@ -97,22 +97,6 @@ export default {
 }
 .update-rotate {
     transform: rotateX(180deg);
-}
-
-.move {
-    animation: move 1s linear infinite;
-    &:hover {
-        animation-play-state: paused; // 暂停动画
-    }
-}
-
-@keyframes move {
-    0% {
-        transform: translateY(-40px);
-    }
-    100% {
-        transform: translateY(40px);
-    }
 }
 
 .iblock {

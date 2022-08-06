@@ -129,7 +129,7 @@ export default {
             store.form.content = value;
             const request = store.form._id ? API.updateCodeSnippet : API.addCodeSnippet
             try {
-                const reg = /^# ([\u4e00-\u9fa5_a-zA-Z0-9]+)\n?/
+                const reg = /^# (.*)\n?/
                 if(reg.test(store.form.content)){
                     store.form.title = RegExp.$1
                 }

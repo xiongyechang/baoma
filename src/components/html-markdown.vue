@@ -1,9 +1,9 @@
 <template>
-	<div :ref="ref => markdownRef=ref" @click="onClick"></div>
+	<div :ref="ref => markdownRef = ref" @click="onClick" @contextmenu="onContextmenu"></div>
 </template>
 
 <script>
-import { 
+import {
 	ref,
 	unref,
 	defineComponent,
@@ -24,7 +24,7 @@ export default defineComponent({
 	name: "html-markdown",
 	inheritAttrs: false,
 	props: {
-    value: { type: String, default: '' },
+		value: { type: String, default: '' },
 	},
 	emits: ['change', 'get', 'update:value', 'save'],
 	mixins: [QiniuMixin],
@@ -38,7 +38,7 @@ export default defineComponent({
 
 		console.log(instance);
 
-		const { ctx } = instance; 
+		const { ctx } = instance;
 
 		watch(() => props.value, (newValue, oldValue) => {
 			if (newValue !== oldValue) {
@@ -47,7 +47,7 @@ export default defineComponent({
 					if (vditor) {
 						try {
 							typeof vditor.setValue === 'function' && vditor.setValue(props.value)
-						} catch(e) {
+						} catch (e) {
 							console.error(e);
 							location.reload();
 						}
@@ -71,7 +71,7 @@ export default defineComponent({
 			}
 			const thisElement = markdownRef.value;
 			const parentElement = thisElement.parentElement;
-			if(parentElement) {
+			if (parentElement) {
 				height.value = parentElement.offsetHeight;
 			}
 			const bindValue = { ...attrs, ...props };
@@ -95,7 +95,7 @@ export default defineComponent({
 						tip: '保存',
 						className: 'right',
 						icon: '<svg t="1640361319243" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="5443" width="200" height="200"><path d="M1008.00076 6.285714q18.857143 13.714286 15.428571 36.571429l-146.285714 877.714286q-2.857143 16.571429-18.285714 25.714285-8 4.571429-17.714286 4.571429-6.285714 0-13.714286-2.857143l-258.857142-105.714286-138.285715 168.571429q-10.285714 13.142857-28 13.142857-7.428571 0-12.571428-2.285714-10.857143-4-17.428572-13.428572T365.715046 987.428571v-199.428571l493.714285-605.142857-610.857142 528.571428-225.714286-92.571428q-21.142857-8-22.857143-31.428572-1.142857-22.857143 18.285714-33.714285L969.143617 5.142857q8.571429-5.142857 18.285714-5.142857 11.428571 0 20.571429 6.285714z" p-id="5444"></path></svg>',
-						click () {
+						click() {
 							const vditor = markdownInstance;
 							if (vditor && vditor.getValue instanceof Function) {
 								const value = vditor.getValue();
@@ -113,33 +113,33 @@ export default defineComponent({
 					}
 				},
 				cache: {
-		          	enable: false,
-		        },
+					enable: false,
+				},
 				input: (v) => {
 					emit('update:value', v);
 					emit('change', v);
 				},
-				after: () => {},
-				blur: () => {},
+				after: () => { },
+				blur: () => { },
 				...bindValue,
 				upload: {
 					async handler([file]) {
 						let message = ``;
 						try {
 							const url = await ctx.uploadToQiniu(file);
-					
+
 							let name = file && file.name;
 
 							let succFileText = "";
 
 							if (markdownInstance && markdownInstance.vditor.currentMode === "wysiwyg") {
-									succFileText += `\n <img alt=${name} src="${url}">`;
+								succFileText += `\n <img alt=${name} src="${url}">`;
 							} else {
-									if (isImage(name)) {
-										succFileText += `\n![${name}](${url})`;
-									} else {
-										succFileText += `\n[${name}](${url})`;
-									}
+								if (isImage(name)) {
+									succFileText += `\n![${name}](${url})`;
+								} else {
+									succFileText += `\n[${name}](${url})`;
+								}
 							}
 
 							document.execCommand("insertHTML", false, succFileText);
@@ -167,23 +167,41 @@ export default defineComponent({
 			}
 		}
 
+		const onContextmenu = () => {
+			console.log(111);
+		}
+
 
 		return {
 			markdownRef,
 			onClick,
+			onContextmenu,
 		};
 	},
 });
 </script>
 
 <style lang="scss">
-	@import url("https://fonts.googleapis.com/css2?family=Fruktur&family=Roboto+Mono&display=swap");
-	.markdown {
-		word-break: break-all;
-		line-height: 2rem;
-		font-size: 16px;
-		text-align: left;
-		font-family: "Roboto Mono", monospace;
-		padding-right: 10px;
+@import url("https://fonts.googleapis.com/css2?family=Fruktur&family=Roboto+Mono&display=swap");
+
+.markdown {
+	word-break: break-all;
+	line-height: 2rem;
+	font-size: 16px;
+	text-align: left;
+	font-family: "Roboto Mono", monospace;
+	padding-right: 10px;
+}
+
+.vditor-tooltipped {
+	&::before {
+		top: 29px;
+		border-bottom-color: #3b3e43;
+		border-top-color: transparent;
 	}
+
+	&::after {
+		bottom: -100%;
+	}
+}
 </style>

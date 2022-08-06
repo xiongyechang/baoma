@@ -1,9 +1,11 @@
 <template>
 	<top-bar></top-bar>
 	<main>
-		<keep-alive include="web">
-			<router-view />
-		</keep-alive>
+		<router-view v-slot="{ Component }">
+			<keep-alive include="web">
+				<component :is="Component" />
+			</keep-alive>
+		</router-view>
 		<router-view name="blank" />
 	</main>
 	<bottom-bar></bottom-bar>
