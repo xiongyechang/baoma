@@ -2,12 +2,9 @@
     <span class="opt-hover opt" title='更新'>
         <el-badge :value="message" :hidden="!updateAvailable">
             <i v-if="!updating" @click="update" class="iconfont icon-update"></i>
-            <div v-else @dblclick="cancelUpdate" style="overflow: hidden;">
+            <div v-else @dblclick="cancelUpdate">
                 <div>
-                    <span class="iblock">{{ progress }}%</span>
-                    <span class="iblock update-rotate">
-                        <i class="iconfont icon-update"></i>
-                    </span>
+                    <span class="iblock">下载进度: {{ progress }}%</span>
                 </div>
             </div>
         </el-badge>
@@ -38,6 +35,7 @@ export default {
             }, {
               key: Update.DownloadProgress, // 正在更新
               method: (event, progress) => {
+                console.log('download: ', event, progress);
                 if (!updating.value) {
                   updating.value = true;
                 }
@@ -81,8 +79,8 @@ export default {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 40px;
     height: 33px;
+    min-width: 40px;
     line-height: 33px;
     padding: 0 10px;
     text-align: center;
@@ -95,10 +93,6 @@ export default {
         background: red;
     }
 }
-.update-rotate {
-    transform: rotateX(180deg);
-}
-
 .iblock {
     display: block;
     height: 33px;
