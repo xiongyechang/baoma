@@ -40,6 +40,10 @@ export default {
                   updating.value = true;
                 }
                 progress.value = (progress.percent.toFixed(2));
+                if (progress.percent == 100) {
+                  updating.value = false;
+                  progress.value = 0;
+                }
               }
             }, {
               key: Update.Message, // 有消息
