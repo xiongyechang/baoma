@@ -2,6 +2,8 @@ import { baseURL } from '@/config/config';
 import { getToken } from '@/utils/utils';
 import axios from "axios";
 import router from "../router";
+import API from '@/api/api';
+import { HttpResponseCode } from '@/constants/constants';
 
 axios.interceptors.request.use(config => {
     const access_token = getToken();
@@ -11,34 +13,46 @@ axios.interceptors.request.use(config => {
     return config;
 }, Promise.reject);
 
+// 无感刷新token
+let isRefreshing = false;
+// 请求队列
+const requests = [];
+
 axios.interceptors.response.use(response => {
-    if (response.status == 401) {
-        window.localStorage.clear();
-        window.sessionStorage.clear();
-        window.document.cookie = "";
-        router.replace({
-            name: "login"
-        });
-    }
     return response;
 }, error => {
-    const { status } = error.response;
-    switch (status) {
-        case '401':
-        case 401:
-            window.localStorage.clear();
-            window.sessionStorage.clear();
-            window.document.cookie = "";
-            router.replace({
-                name: "login"
+    const { status, config } = error.response;
+    if (status == HttpResponseCode.UNAUTHORIZED) {
+        requests.push(() => axios(config));
+        if (!isRefreshing) {
+            isRefreshing = true;
+            return API.getRefreshToken().then(res => {
+                const { data, code, message } = res;
+                if (code === HttpResponseCode.OK) {
+                    localStorage.setItem("access_token", data);
+                    requests.forEach(callback => callback());
+                    requests.length = 0;
+                } else {
+                    ElMessage.error(message)
+                    router.replace({
+                        name: "login"
+                    });
+                }
+            }).catch(e => {
+                console.error(e);
+                router.replace({
+                    name: "login"
+                });
+            }).finally(() => {
+                isRefreshing = false;
             })
-            break;
+        }
+    } else {
+        return Promise.reject(error);
     }
-
-    return Promise.reject(error);
 });
 
-const request = async (method, url, data) => {
+const request = (method, url, data) => {
     let args = null;
 
     if (method === "GET" || method === "DELETE") {
@@ -53,7 +67,7 @@ const request = async (method, url, data) => {
         args = {};
     }
 
-    return await axios({
+    return axios({
         baseURL,
         method,
         url,
@@ -62,21 +76,16 @@ const request = async (method, url, data) => {
 };
 
 export default class Http {
-    // static GET = "GET";
-    // static POST = "POST";
-    // static DELETE = "DELETE";
-    // static PUT = "PUT";
-
-    static async get(path, params) {
-        return await request(`GET`, `${path}`, params).then(({ data }) => data);
+    static get(path, params) {
+        return request(`GET`, `${path}`, params).then(({ data }) => data).catch(console.error);
     }
-    static async post(path, params) {
-        return await request(`POST`, `${path}`, params).then(({ data }) => data);
+    static post(path, params) {
+        return request(`POST`, `${path}`, params).then(({ data }) => data).catch(console.error);
     }
-    static async delete(path, params) {
-        return await request(`DELETE`, `${path}`, params).then(({ data }) => data);
+    static delete(path, params) {
+        return request(`DELETE`, `${path}`, params).then(({ data }) => data).catch(console.error);
     }
-    static async put(path, params) {
-        return await request(`PUT`, `${path}`, params).then(({ data }) => data);
+    static put(path, params) {
+        return request(`PUT`, `${path}`, params).then((({ data }) => data)).catch(console.error); 
     }
 }

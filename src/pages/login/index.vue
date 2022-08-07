@@ -70,14 +70,13 @@
 	export default {
 		name: "login-page",
 		setup() {
-
 			const ruleFormRef = ref(null)
 
 			const _data = reactive({
 				verifyCodeImg: null,
 				ruleForm: {
-					username: "",
-					password: "",
+					username: "xiongyechang",
+					password: "000000000",
 					email: "",
 					verify_code: "",
 				},

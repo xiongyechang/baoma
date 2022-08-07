@@ -133,7 +133,7 @@ export default {
                 if(reg.test(store.form.content)){
                     store.form.title = RegExp.$1
                 }
-                const { code, message, data} = await request(store.form)
+                const { code, message, data } = await request(store.form);
                 if (code === HttpResponseCode.OK) {
                     Object.assign(store.form, {
                         _id: data._id,
