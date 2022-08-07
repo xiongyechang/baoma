@@ -30,6 +30,7 @@ axios.interceptors.response.use(response => {
                 const { data, code, message } = res;
                 if (code === HttpResponseCode.OK) {
                     localStorage.setItem("access_token", data);
+                    store.dispatch("admin/setLoginStatus", true);
                     requests.forEach(callback => callback());
                     requests.length = 0;
                 } else {
