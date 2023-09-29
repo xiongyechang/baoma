@@ -1,7 +1,6 @@
 import { CancellationToken, autoUpdater } from "electron-updater";
 import { BrowserWindow, ipcMain } from "electron";
 import { Update } from "@/constants/constants";
-
 import { baseURL } from "../config/config";
 
 const mainWindow =
@@ -47,8 +46,8 @@ ipcMain.on(Update.IsUpdate, (event, data) => {
 });
 // 取消下载
 ipcMain.on(Update.CancelUpdate, (event, data) => {
-  if (data) {
-    cancellationToken?.cancel();
+  if (data && cancellationToken) {
+    cancellationToken.cancel();
   }
 });
 
@@ -75,7 +74,9 @@ autoUpdater.on(Update.UpdateDownloaded, function () {
 ipcMain.on(Update.CheckForUpdate, () => {
   //放外面的话启动客户端执行自动更新检查
   autoUpdater.checkForUpdates().then((downloadPromise) => {
-    cancellationToken = downloadPromise?.cancellationToken;
+    cancellationToken = downloadPromise
+      ? downloadPromise.cancellationToken
+      : void 0;
   });
 });
 

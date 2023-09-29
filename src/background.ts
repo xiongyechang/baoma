@@ -40,7 +40,8 @@ async function createWindow() {
   remoteMain.enable(win.webContents);
   remoteMain.initialize();
 
-  // require("./main/update.ts");
+  require("./main/update");
+  // import("./main/update");
 
   if (process.env.WEBPACK_DEV_SERVER_URL) {
     // Load the url of the dev server if in development mode
