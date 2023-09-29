@@ -1,42 +1,62 @@
 <template>
-  <div id="topbar" ref="topbar">
+  <div class="topbar" ref="topbar">
     <div class="topbar-logo">
-        <div v-if="showBackBtn" @click="back" class="back-icon">
-          <span>
-            <i class="el-icon-arrow-left"></i>
-          </span>
-        </div>
-        <img :style="logoMarginLeft" src="@/assets/logo.png" width="24" height="24">
-        <span>宝码{{ version }}</span>
+      <span
+        class="back-icon"
+        :style="{
+          width: showBackBtn ? `60px` : 0,
+        }"
+        @click="back"
+      >
+        <el-icon color="#fff" size="18"><ArrowLeftBold /></el-icon>
+      </span>
+      <img
+        :style="logoMarginLeft"
+        src="@/assets/logo.png"
+        width="24"
+        height="24"
+      />
+      <span class="app-name">{{ name }}@{{ version }}</span>
     </div>
-    <div>
+    <div class="topbar-body">
       <span class="opt-minimize" @click.stop="minimize">
-        <i class="el-icon-minus"></i>
+        <el-icon><SemiSelect /></el-icon>
       </span>
       <span class="opt-maximize" @click.stop="maximize">
-        <i :class="fullscreen"></i>
+        <el-icon><FullScreen /></el-icon>
       </span>
       <span class="opt-close" @click.stop="close">
-        <i class="el-icon-close"></i>
+        <el-icon><CloseBold /></el-icon>
       </span>
     </div>
   </div>
 </template>
 
-<script>
+<script lang="ts">
+import { app, getCurrentWindow } from "@electron/remote";
+import { ref, computed, onMounted, defineComponent } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { WindowSize } from "@/constants/constants";
+import {
+  FullScreen,
+  SemiSelect,
+  CloseBold,
+  ArrowLeftBold,
+} from "@element-plus/icons-vue";
 
-import { app, getCurrentWindow } from '@electron/remote';
-import { ref, computed, onMounted } from 'vue';
-import { onBeforeRouteLeave, useRoute, useRouter } from "vue-router";
-import { WindowSize, WindowSizeIcon } from '@/constants/constants';
-
-
-export default {
-  name: "topbar",
+export default defineComponent({
+  name: "top-bar",
+  components: {
+    FullScreen,
+    SemiSelect,
+    CloseBold,
+    ArrowLeftBold,
+  },
   setup() {
-
-    let currWindow = null;
+    let currWindow: any = null;
     let windowSize = ref(WindowSize.normal);
+
+    const name = app.getName();
 
     const version = app.getVersion();
 
@@ -46,7 +66,6 @@ export default {
     const route = useRoute();
 
     onMounted(() => {
-
       currWindow = getCurrentWindow(); // 当前窗口
 
       document.addEventListener("visibilitychange", () => {
@@ -67,13 +86,11 @@ export default {
       });
     });
 
+    const showBackBtn = computed(() => route.path !== "/");
 
-    // 计算属性
-    const fullscreen = computed(() => windowSize.value === WindowSize.normal ? WindowSizeIcon.max : WindowSizeIcon.normal);
-
-    const showBackBtn = computed(() => route.path !== '/');
-
-    const logoMarginLeft = computed(() => route.path === '/' ? { marginLeft: '10px' } : null);
+    const logoMarginLeft = computed(() =>
+      route.path === "/" ? { marginLeft: "10px" } : {}
+    );
 
     const maximize = () => {
       if (currWindow.isMaximized()) {
@@ -83,40 +100,40 @@ export default {
         currWindow.maximize();
         windowSize.value = WindowSize.maximize;
       }
-    }
+    };
 
     const minimize = () => {
       if (!currWindow.isMinimized()) {
         currWindow.minimize();
         windowSize.value = WindowSize.minimize;
       }
-    }
+    };
 
     const close = () => {
       app.quit();
-    }
+    };
 
     const back = () => {
       router.back();
-    }
+    };
 
     return {
       app,
+      name,
       version,
-      fullscreen,
       showBackBtn,
       logoMarginLeft,
       maximize,
       minimize,
       close,
-      back
-    }
-  }
-};
+      back,
+    };
+  },
+});
 </script>
 
 <style lang="scss" scoped>
-#topbar {
+.topbar {
   height: 33px;
   background: var(--primary-color);
   display: flex;
@@ -124,24 +141,13 @@ export default {
   align-items: center;
   -webkit-app-region: drag;
   .topbar-logo {
-      display: flex;
-      align-items: center;
-      flex-direction: row;
-      justify-content: flex-start;
-      .back-icon {
-        margin-right: 10px;
-        font-size: 24px;
-        cursor: pointer;
-        &:hover {
-          background-color: red;
-        }
-      }
-  }
-  div {
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    justify-content: flex-start;
     height: 33px;
-    span {
+    .app-name {
       display: inline-block;
-      min-width: 40px;
       height: 33px;
       line-height: 33px;
       padding: 0 10px;
@@ -149,14 +155,41 @@ export default {
       color: #fff;
       -webkit-app-region: no-drag;
     }
+    .back-icon {
+      height: 33px;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      cursor: pointer;
+      -webkit-app-region: no-drag;
+      transition: width 0.3s linear;
+      will-change: width;
+      &:hover {
+        background-color: red;
+      }
+    }
   }
-
-  .opt-minimize,
-  .opt-maximize,
-  .opt-close {
-    cursor: pointer;
-    &:hover {
-      background: red;
+  .topbar-body {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    height: 33px;
+    .opt-minimize,
+    .opt-maximize,
+    .opt-close {
+      display: grid;
+      place-items: center;
+      min-width: 40px;
+      height: 33px;
+      line-height: 33px;
+      padding: 0 10px;
+      text-align: center;
+      color: #fff;
+      -webkit-app-region: no-drag;
+      cursor: pointer;
+      &:hover {
+        background: red;
+      }
     }
   }
 }
