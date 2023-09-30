@@ -1,37 +1,45 @@
 <template>
   <span class="opt-hover opt" title="更新">
     <el-badge :value="message" :hidden="!updateAvailable">
-      <i v-if="!updating" @click="update" class="iconfont icon-update"></i>
-      <div v-else @dblclick="cancelUpdate">
-        <div>
-          <span class="iblock">下载进度: {{ progress }}%</span>
-        </div>
-      </div>
+      <i v-if="!updating" class="iconfont icon-update"></i>
     </el-badge>
   </span>
+  <el-dialog v-model="updateAvailable" title="更新" width="30%">
+    <el-progress type="circle" :percentage="progress" />
+    <template #footer>
+      <span class="dialog-footer">
+        <el-button @click="cancelUpdate">取消</el-button>
+        <el-button type="primary" @click="update">确定</el-button>
+      </span>
+    </template>
+  </el-dialog>
 </template>
 
 <script lang="ts">
 import { ipcRenderer } from "electron";
-import { ref, onMounted } from "vue";
+import { ref, onMounted, defineComponent } from "vue";
 import { Update } from "@/constants/constants";
-export default {
+export default defineComponent({
   name: "update-component",
   setup() {
-    let updateAvailable = ref(false),
+    const updateAvailable = ref(false),
       message = ref(`有更新啦`),
       updating = ref(false),
-      progress = ref(0);
-
+      progress = ref(0),
+      dialogVisible = ref(false);
     onMounted(() => {
       // 检查是否有更新
       ipcRenderer.send(Update.CheckForUpdate);
 
-      const methods = [
+      const methods: Array<{
+        key: string;
+        method: (event: Event, progress: any) => void;
+      }> = [
         {
           key: Update.IsUpdate, // 有更新
           method: () => {
             updateAvailable.value = true;
+            dialogVisible.value = true;
           },
         },
         {
@@ -42,10 +50,6 @@ export default {
               updating.value = true;
             }
             progress.value = progress.percent.toFixed(2);
-            if (progress.percent == 100) {
-              updating.value = false;
-              progress.value = 0;
-            }
           },
         },
         {
@@ -67,7 +71,11 @@ export default {
     };
 
     const cancelUpdate = () => {
-      ipcRenderer.send(Update.CancelUpdate, true);
+      if (updating.value) {
+        ipcRenderer.send(Update.CancelUpdate, true);
+      } else {
+        dialogVisible.value = false;
+      }
     };
 
     return {
@@ -79,7 +87,7 @@ export default {
       cancelUpdate,
     };
   },
-};
+});
 </script>
 
 <style lang="scss" scoped>
@@ -100,10 +108,5 @@ export default {
   &:hover {
     background: red;
   }
-}
-.iblock {
-  display: block;
-  height: 33px;
-  line-height: 33px;
 }
 </style>

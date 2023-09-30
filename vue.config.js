@@ -38,7 +38,7 @@ module.exports = defineConfig({
       externals: ["clipboard"], // Cannot find module 'clipboard'
       builderOptions: {
         appId: "cs.xiongyechang.com",
-        productName: "宝码", // 项目名，也是生成的安装文件名，即aDemo.exe
+        productName: "baoma", // 项目名，也是生成的安装文件名，即baoma.exe
         copyright: "Copyright © 2021", // 版权信息
         win: {
           icon: "./public/favicon.ico",
@@ -47,7 +47,7 @@ module.exports = defineConfig({
             {
               target: "nsis", //利用nsis制作安装程序
               arch: [
-                //   "x64", //64位
+                "x64", //64位
                 "ia32", //32位
               ],
             },
@@ -57,7 +57,7 @@ module.exports = defineConfig({
           icon: "./public/favicon.icns", // 这里是设置的 dock 里面的图标
           category: "public.app-category.utilities", // 应用类型
           target: ["dmg", "zip"], // 打包的目标类型(默认是dmg和zip),支持很多类型，具体看文档
-          // artifactName: "${productName}@${version}.dmg",
+          artifactName: "${productName}@${version}.dmg",
         },
         linux: {
           icon: "./public/logo.png", // 包含各种尺寸图标的文件夹

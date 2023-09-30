@@ -1,6 +1,6 @@
 {
   "name": "baoma",
-  "version": "1.11.8",
+  "version": "1.11.9",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",

@@ -28,22 +28,24 @@ autoUpdater.on(Update.Error, function () {
     msg: message.error,
   });
 });
+
 autoUpdater.on(Update.CheckingForUpdate, function () {
   sendUpdateMessage({
     code: 1,
     msg: message.checking,
   });
 });
+
 autoUpdater.on(Update.UpdateAvailable, function () {
   mainWindow.webContents.send(Update.IsUpdate);
 });
 
 ipcMain.on(Update.IsUpdate, (event, data) => {
-  console.log(data);
   if (data) {
     autoUpdater.downloadUpdate(); // 手动下载
   }
 });
+
 // 取消下载
 ipcMain.on(Update.CancelUpdate, (event, data) => {
   if (data && cancellationToken) {

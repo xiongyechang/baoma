@@ -3,13 +3,7 @@
 </template>
 
 <script lang="ts">
-import {
-  reactive,
-  toRefs,
-  getCurrentInstance,
-  defineAsyncComponent,
-  onMounted,
-} from "vue";
+import { reactive, toRefs, defineAsyncComponent, onMounted } from "vue";
 import API from "@/api/api";
 import { HttpResponseCode } from "@/constants/constants";
 import { ElMessage, ElNotification } from "element-plus";
@@ -45,10 +39,6 @@ export default {
   },
   // @ts-ignore
   setup(props) {
-    const instance = getCurrentInstance();
-
-    console.log(instance);
-
     const store = reactive({
       dialogVisible: false,
       list: [],
