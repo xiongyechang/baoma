@@ -1,7 +1,15 @@
 import { CancellationToken, autoUpdater } from "electron-updater";
-import { BrowserWindow, ipcMain } from "electron";
+import { BrowserWindow, ipcMain, app } from "electron";
 import { Update } from "@/constants/constants";
 import { baseURL } from "../config/config";
+
+if (process.env.NODE_ENV === "development") {
+  Object.defineProperty(app, "isPackaged", {
+    get() {
+      return true;
+    },
+  });
+}
 
 const mainWindow =
   BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0];
@@ -9,7 +17,7 @@ const mainWindow =
 let cancellationToken: CancellationToken | undefined;
 
 //执行自动更新检查
-const feedUrl = `${baseURL}/api/update/`; // 更新包位置
+const feedUrl = `https://cdn.xiongyechang.com`; // 更新包位置
 
 autoUpdater.autoDownload = false;
 
@@ -42,12 +50,13 @@ autoUpdater.on(Update.UpdateAvailable, function () {
 
 ipcMain.on(Update.IsUpdate, (event, data) => {
   if (data) {
-    autoUpdater.downloadUpdate(); // 手动下载
+    autoUpdater.downloadUpdate(cancellationToken); // 手动下载
   }
 });
 
 // 取消下载
 ipcMain.on(Update.CancelUpdate, (event, data) => {
+  console.log("event data cancellationToken", event, data, cancellationToken);
   if (data && cancellationToken) {
     cancellationToken.cancel();
   }

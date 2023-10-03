@@ -16,17 +16,8 @@
       </el-row>
       <el-tree
         ref="treeRef"
+        v-bind="treeConfig"
         style="height: calc(100% - 50px); overflow: auto"
-        :indent="0"
-        :data="treeData"
-        :props="treeOptions"
-        node-key="_id"
-        show-checkbox
-        :expand-on-click-node="false"
-        :default-expanded-keys="defaultExpandedKeys"
-        :highlight-current="true"
-        @node-click="nodeClickHandler"
-        v-loading="!treeData.length"
       >
         <template #default="{ data }">
           <template v-if="data.editable">
@@ -72,15 +63,7 @@
           <el-input placeholder="请输入搜索词" v-model="keyword"> </el-input>
         </el-col>
       </el-row>
-      <el-table
-        :data="tableData"
-        :border="true"
-        stripe
-        highlight-current-row
-        @selection-change="selectionChange"
-        height="100%"
-        v-loading="tableLoading"
-      >
+      <el-table v-bind="tableConfig" height="100%">
         <el-table-column type="selection" width="40"></el-table-column>
         <el-table-column label="类型" width="60">
           <template #default="scope">
@@ -119,15 +102,7 @@
         </el-table-column>
       </el-table>
       <el-pagination
-        size="mini"
-        @current-change="currentPageChange"
-        @size-change="currentSizeChange"
-        background
-        :current-Page="page"
-        :page-size="limit"
-        :page-sizes="[5, 10, 20, 40, 60, 100]"
-        layout="total, sizes, prev, pager, next, jumper"
-        :total="total"
+        v-bind="paginationConfig"
         class="table-widget-bottom"
       ></el-pagination>
     </div>
@@ -136,31 +111,32 @@
 
 <script lang="ts">
 import { ref, reactive, toRefs, defineComponent, PropType } from "vue";
-
 import API from "@/api/api";
 import randomstring from "randomstring";
 import { useQiniu } from "@/hooks";
 import dayjs from "dayjs";
 import { HttpResponseCode } from "@/constants/constants";
-import { ElMessage } from "element-plus";
+import { ElMessage, TableProps } from "element-plus";
 import { useRouter } from "vue-router";
-import { TreeKey } from "element-plus/es/components/tree/src/tree.type";
+import { TreeComponentProps } from "element-plus/es/components/tree/src/tree.type";
 import { Plus, Edit, Delete } from "@element-plus/icons-vue";
+import { CodeSnippetItem } from "@/typing/code-snippet";
+import ElPagination from "element-plus/es/components/pagination";
 
 const ADD_ID_LENGTH = 8; // 添加的节点 _id 的长度
 
 export default defineComponent({
   name: "tree-table",
   props: {
-    treeData: {
-      type: Array as PropType<any[]>,
-      default: () => [],
+    treeConfig: {
+      type: Object as PropType<TreeComponentProps>,
     },
-    treeOptions: Object,
-    tableColumns: {
-      type: Array,
+    tableConfig: {
+      type: Object as PropType<TableProps<CodeSnippetItem>>,
     },
-    defaultExpandedKeys: Array as PropType<TreeKey[]>,
+    paginationConfig: {
+      type: Object as PropType<typeof ElPagination>,
+    },
   },
   setup() {
     // 获取路由器实例
@@ -183,29 +159,6 @@ export default defineComponent({
 
     const { upload } = useQiniu();
 
-    const nodeClickHandler = (data: any, node: HTMLDivElement) => {
-      _data.selectedTreeNode = node;
-      getCodeSnippetsByCategory(data._id);
-    };
-
-    const getCodeSnippets = async () => {
-      try {
-        const {
-          code,
-          message,
-          data: { rows, count },
-        } = await API.getCodeSnippets(_data.page, _data.limit);
-        if (code === HttpResponseCode.OK) {
-          _data.tableData = rows;
-          _data.total = count;
-        } else {
-          ElMessage.error(message);
-        }
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
     const getCodeSnippetsByCategory = async (_id: string) => {
       tableLoading.value = true;
       // @ts-ignore
@@ -213,7 +166,10 @@ export default defineComponent({
       let response = null;
       try {
         if (_id === root.data._id) {
-          response = await API.getCodeSnippets(_data.page, _data.limit);
+          response = await API.getCodeSnippets({
+            page: _data.page,
+            limit: _data.limit,
+          });
         } else {
           response = await API.getCodeSnippetsByCategory({
             _id,
@@ -335,24 +291,6 @@ export default defineComponent({
       fileUploadDOM.click();
     };
 
-    const currentPageChange = (page: number) => {
-      _data.page = page;
-      if (_data.selectedTreeNode) {
-        getCodeSnippetsByCategory(_data.selectedTreeNode.data._id);
-      } else {
-        getCodeSnippets();
-      }
-    };
-
-    const currentSizeChange = (size: number) => {
-      _data.limit = size;
-      if (_data.selectedTreeNode) {
-        getCodeSnippetsByCategory(_data.selectedTreeNode.data._id);
-      } else {
-        getCodeSnippets();
-      }
-    };
-
     const addCodeSnippet = () => {
       if (!_data.selectedTreeNode) {
         ElMessage({
@@ -390,7 +328,7 @@ export default defineComponent({
             if (_data.selectedTreeNode) {
               getCodeSnippetsByCategory(_data.selectedTreeNode.data._id);
             } else {
-              getCodeSnippets();
+              // getCodeSnippets();
             }
             ElMessage({
               type: "success",
@@ -409,11 +347,6 @@ export default defineComponent({
         },
       });
     };
-    const selectionChange = (list: any[]) => {
-      _data.multipleSelection = list.map(({ _id }) => _id);
-    };
-
-    getCodeSnippets();
 
     const getCategoryAvatar = (category: any) => {
       return (category && category.avatar) || "";
@@ -424,20 +357,15 @@ export default defineComponent({
       tableLoading,
       ...toRefs(_data),
       dayjs,
-      nodeClickHandler,
-      getCodeSnippets,
       getCodeSnippetsByCategory,
       appendToTree,
       updateCategory,
       removeCategories,
       doCategoryAction,
       setCategoryAvatar,
-      currentPageChange,
-      currentSizeChange,
       addCodeSnippet,
       removeCodeSnippets,
       updateCodeSnippet,
-      selectionChange,
       getCategoryAvatar,
       Plus,
       Edit,

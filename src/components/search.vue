@@ -109,7 +109,10 @@ export default defineComponent({
           code,
           message,
           data: { rows, count },
-        } = await API.getCodeSnippets(page.value, limit.value);
+        } = await API.getCodeSnippets({
+          page: page.value,
+          limit: limit.value,
+        });
         if (code === HttpResponseCode.OK) {
           total.value = count;
           if (page.value === 1) {
@@ -167,7 +170,10 @@ export default defineComponent({
           code,
           message,
           data: { rows },
-        } = await API.getCodeCategories();
+        } = await API.getCodeCategories({
+          page: 1,
+          limit: 1000,
+        });
 
         if (code === HttpResponseCode.OK) {
           options.value = rows.reduce(

@@ -91,7 +91,10 @@ export default {
           code,
           message,
           data: { rows },
-        } = await API.getCodeSnippets(page, limit);
+        } = await API.getCodeSnippets({
+          page,
+          limit,
+        });
         if (code === HttpResponseCode.OK) {
           // @ts-ignore
           store.list = formatData(rows);
@@ -103,13 +106,16 @@ export default {
       }
     };
 
-    const getCodeCategories = async () => {
+    const getCodeCategories = async (page = 1, limit = 100) => {
       try {
         const {
           code,
           message,
           data: { rows },
-        } = await API.getCodeCategories();
+        } = await API.getCodeCategories({
+          page,
+          limit,
+        });
         if (code === HttpResponseCode.OK) {
           store.categories = rows;
         } else {

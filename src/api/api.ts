@@ -1,5 +1,6 @@
 import http from "@/http/http";
 import { baseURL } from "@/config/config";
+import { toQuerystring } from "@/utils/utils";
 
 const prefix = `/api`;
 
@@ -16,9 +17,14 @@ export default {
   updateCodeSnippet(codesnippet: Record<string, any> | undefined) {
     return http.put(`${baseURL}${prefix}${CodeSnippetRoute}`, codesnippet);
   },
-  getCodeSnippets(page = 1, limit = 20) {
+  getCodeSnippets(params: {
+    page: number;
+    limit: number;
+    categoryId?: string;
+    keyword?: string;
+  }) {
     return http.get(
-      `${baseURL}${prefix}${CodeSnippetRoute}?page=${page}&limit=${limit}`
+      `${baseURL}${prefix}${CodeSnippetRoute}?${toQuerystring(params)}`
     );
   },
   getCodeSnippet(_id: any) {
@@ -32,8 +38,10 @@ export default {
       `${baseURL}${prefix}${CodeSnippetRoute}/search?keyword=${keyword}&category=${category}&page=${page}&limit=${limit}`
     );
   },
-  getCodeCategories() {
-    return http.get(`${baseURL}${prefix}${CodeCategoryRoute}`);
+  getCodeCategories(params: { page: number; limit: number }) {
+    return http.get(
+      `${baseURL}${prefix}${CodeCategoryRoute}?${toQuerystring(params)}`
+    );
   },
   getCodeSnippetsByCategory({ _id, page = 1, limit = 20 }: any) {
     return http.get(

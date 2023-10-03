@@ -1,15 +1,30 @@
 <template>
   <span class="opt-hover opt" title="更新">
-    <el-badge :value="message" :hidden="!updateAvailable">
-      <i v-if="!updating" class="iconfont icon-update"></i>
+    <el-badge value="有更新啦" :hidden="!updateAvailable">
+      <i class="iconfont icon-update"></i>
     </el-badge>
   </span>
-  <el-dialog v-model="updateAvailable" title="更新" width="30%">
-    <el-progress type="circle" :percentage="progress" />
+  <el-dialog
+    v-model="updateAvailable"
+    title="确定更新？"
+    width="30%"
+    :close-on-click-modal="false"
+    :close-on-press-escape="false"
+  >
+    <el-row justify="center">
+      <el-progress
+        type="circle"
+        :percentage="percentage"
+        striped
+        striped-flow
+      />
+    </el-row>
     <template #footer>
       <span class="dialog-footer">
-        <el-button @click="cancelUpdate">取消</el-button>
-        <el-button type="primary" @click="update">确定</el-button>
+        <el-button @click="cancelUpdate" :disabled="!updating"
+          >取消更新</el-button
+        >
+        <el-button type="primary" @click="onUpdate">更新</el-button>
       </span>
     </template>
   </el-dialog>
@@ -19,43 +34,38 @@
 import { ipcRenderer } from "electron";
 import { ref, onMounted, defineComponent } from "vue";
 import { Update } from "@/constants/constants";
+
 export default defineComponent({
   name: "update-component",
   setup() {
     const updateAvailable = ref(false),
-      message = ref(`有更新啦`),
       updating = ref(false),
-      progress = ref(0),
+      percentage = ref(0),
       dialogVisible = ref(false);
-    onMounted(() => {
-      // 检查是否有更新
-      ipcRenderer.send(Update.CheckForUpdate);
 
+    onMounted(() => {
       const methods: Array<{
         key: string;
         method: (event: Event, progress: any) => void;
       }> = [
         {
           key: Update.IsUpdate, // 有更新
-          method: () => {
+          method() {
             updateAvailable.value = true;
             dialogVisible.value = true;
           },
         },
         {
           key: Update.DownloadProgress, // 正在更新
-          method: (event: Event, progress: any) => {
-            console.log("download: ", event, progress);
-            if (!updating.value) {
-              updating.value = true;
-            }
-            progress.value = progress.percent.toFixed(2);
+          method(event: Event, progress: any) {
+            updating.value = true;
+            percentage.value = progress.percent.toFixed(2);
           },
         },
         {
           key: Update.Message, // 有消息
-          method: (data: any) => {
-            console.log(data);
+          method(event: Event, data: any) {
+            console.log(event, data);
           },
         },
       ];
@@ -63,27 +73,25 @@ export default defineComponent({
       methods.forEach(({ key, method }) => {
         ipcRenderer.on(key, method);
       });
+
+      // 检查是否有更新
+      ipcRenderer.send(Update.CheckForUpdate);
     });
 
-    const update = () => {
+    const onUpdate = () => {
       ipcRenderer.send(Update.IsUpdate, true);
-      message.value = `双击取消更新`;
     };
 
     const cancelUpdate = () => {
-      if (updating.value) {
-        ipcRenderer.send(Update.CancelUpdate, true);
-      } else {
-        dialogVisible.value = false;
-      }
+      ipcRenderer.send(Update.CancelUpdate, true);
     };
 
     return {
       updateAvailable,
-      message,
+      dialogVisible,
       updating,
-      progress,
-      update,
+      percentage,
+      onUpdate,
       cancelUpdate,
     };
   },
