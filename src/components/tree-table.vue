@@ -3,13 +3,22 @@
     <div>
       <el-row :gutter="10" style="padding: 5px 5px 5px 25px; height: 40px">
         <el-col>
-          <el-button type="primary" :icon="Plus" @click="appendToTree"
+          <el-button
+            type="primary"
+            :icon="Plus"
+            @click="doAction(ADD_TREE_NODE, treeRef)"
             >添加</el-button
           >
-          <el-button type="success" :icon="Edit" @click="updateCategory"
+          <el-button
+            type="success"
+            :icon="Edit"
+            @click="doAction(UPDATE_TREE_NODE, treeRef)"
             >更新</el-button
           >
-          <el-button type="danger" :icon="Delete" @click="removeCategories"
+          <el-button
+            type="danger"
+            :icon="Delete"
+            @click="doAction(DELETE_TREE_NODE, treeRef)"
             >删除</el-button
           >
         </el-col>
@@ -19,42 +28,24 @@
         v-bind="treeConfig"
         style="height: calc(100% - 50px); overflow: auto"
       >
-        <template #default="{ data }">
-          <template v-if="data.editable">
-            <input
-              type="text"
-              v-model="data.title"
-              @blur="doCategoryAction(data, $event)"
-              @click.prevent.stop
-            />
-          </template>
-          <template v-else>
-            <div class="flex-center-start">
-              <input
-                :id="data._id"
-                type="file"
-                :data-id="data._id"
-                style="width: 0; height: 0; overflow: hidden"
-              />
-              <img
-                :src="data.avatar"
-                @click.stop.prevent="setCategoryAvatar(data)"
-                height="16"
-                width="16"
-              />
-              <span class="category-title">{{ data.title }}</span>
-            </div>
-          </template>
+        <template #default="node">
+          <slot :data="node"></slot>
         </template>
       </el-tree>
     </div>
     <div class="table-widget">
       <el-row class="table-widget-top">
         <el-col :span="8">
-          <el-button type="primary" :icon="Plus" @click="addCodeSnippet"
+          <el-button
+            type="primary"
+            :icon="Plus"
+            @click="doAction(ADD_TABLE_ROW)"
             >添加</el-button
           >
-          <el-button type="danger" :icon="Delete" @click="removeCodeSnippets"
+          <el-button
+            type="danger"
+            :icon="Delete"
+            @click="doAction(DELETE_TABLE_ROW)"
             >删除</el-button
           >
         </el-col>
@@ -95,7 +86,10 @@
         </el-table-column>
         <el-table-column fixed="right" label="操作" width="120">
           <template #default="scope">
-            <el-button @click="updateCodeSnippet(scope.row)" link size="small"
+            <el-button
+              @click="doAction(UPDATE_TABLE_ROW, scope.row)"
+              size="small"
+              :icon="Edit"
               >更新</el-button
             >
           </template>
@@ -110,20 +104,14 @@
 </template>
 
 <script lang="ts">
-import { ref, reactive, toRefs, defineComponent, PropType } from "vue";
-import API from "@/api/api";
-import randomstring from "randomstring";
-import { useQiniu } from "@/hooks";
+import { ref, defineComponent, PropType } from "vue";
 import dayjs from "dayjs";
-import { HttpResponseCode } from "@/constants/constants";
-import { ElMessage, TableProps } from "element-plus";
-import { useRouter } from "vue-router";
+import { TableProps } from "element-plus";
 import { TreeComponentProps } from "element-plus/es/components/tree/src/tree.type";
 import { Plus, Edit, Delete } from "@element-plus/icons-vue";
 import { CodeSnippetItem } from "@/typing/code-snippet";
 import ElPagination from "element-plus/es/components/pagination";
-
-const ADD_ID_LENGTH = 8; // 添加的节点 _id 的长度
+import { TreeTableActions } from "@/constants/constants";
 
 export default defineComponent({
   name: "tree-table",
@@ -138,238 +126,27 @@ export default defineComponent({
       type: Object as PropType<typeof ElPagination>,
     },
   },
-  setup() {
-    // 获取路由器实例
-    const router = useRouter();
-
-    const tableLoading = ref(false);
-
-    const _data = reactive({
-      selectedTreeNode: null as any, // 点击树节点后才会有值
-      selectedCodeSnippet: null,
-      tableData: [],
-      page: 1,
-      limit: 20,
-      total: 0,
-      keyword: "",
-      multipleSelection: [] as string[],
-    });
-
+  setup(_props, { emit }) {
     const treeRef = ref<HTMLDivElement | null>(null);
-
-    const { upload } = useQiniu();
-
-    const getCodeSnippetsByCategory = async (_id: string) => {
-      tableLoading.value = true;
-      // @ts-ignore
-      const root = treeRef.value?.root?.childNodes[0];
-      let response = null;
-      try {
-        if (_id === root.data._id) {
-          response = await API.getCodeSnippets({
-            page: _data.page,
-            limit: _data.limit,
-          });
-        } else {
-          response = await API.getCodeSnippetsByCategory({
-            _id,
-            page: _data.page,
-            limit: _data.limit,
-          });
-        }
-
-        const {
-          code,
-          message,
-          data: { count, rows },
-        } = response;
-
-        if (code === HttpResponseCode.OK) {
-          _data.tableData = rows;
-          _data.total = count;
-        } else {
-          ElMessage.error(message);
-        }
-      } catch (error) {
-        console.error(error);
-      } finally {
-        tableLoading.value = false;
-      }
-    };
-
-    const appendToTree = () => {
-      // @ts-ignore
-      const root = treeRef.value?.root.childNodes[0];
-      treeRef.value?.append(
-        {
-          // @ts-ignore
-          _id: randomstring.generate({
-            capitalization: "lowercase",
-            length: ADD_ID_LENGTH,
-          }),
-          title: "",
-          count: 0,
-          editable: true,
-        },
-        root
-      ); // root 是指树的第一级节点
-    };
-
-    const updateCategory = () => {
-      // @ts-ignore
-      const selectedTreeNode = treeRef.value?.getCheckedNodes();
-      if (selectedTreeNode.length !== 1) {
-        ElMessage.warning("必须选择一项");
-      } else {
-        // @ts-ignore
-        selectedTreeNode.forEach((node) => {
-          node.editable = true;
-        });
-      }
-    };
-
-    const removeCategories = () => {
-      // @ts-ignore
-      const selectedTreeNode = treeRef.value?.getCheckedNodes();
-      if (selectedTreeNode.length) {
-        const reqs = selectedTreeNode.map((category: any) => {
-          return API.removeCategory(category);
-        });
-        Promise.all(reqs)
-          .then(() => {
-            selectedTreeNode.forEach((node: HTMLDivElement) => {
-              // @ts-ignore
-              treeRef.value.remove(node);
-            });
-          })
-          .catch(console.error);
-      }
-    };
-
-    const doCategoryAction = async (category: any, event: Event) => {
-      let request = null;
-      if (category._id.length === ADD_ID_LENGTH) {
-        request = API.addCategory;
-      } else {
-        request = API.updateCategory;
-      }
-      try {
-        const { code, message, data } = await request(category);
-
-        if (code === HttpResponseCode.OK) {
-          ElMessage.success(message);
-          Object.assign(category, {
-            _id: data._id,
-            // @ts-ignore
-            title: event.target?.value,
-            editable: false,
-          });
-        } else {
-          ElMessage.error(message);
-        }
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
-    const setCategoryAvatar = async (data: any) => {
-      const fileUploadDOM = document.getElementById(
-        `${data._id}`
-      ) as HTMLInputElement;
-      fileUploadDOM.addEventListener(
-        "change",
-        async (event: Event) => {
-          // @ts-ignore
-          const file = event.target?.files[0];
-          // @ts-ignore
-          const avatar = await upload(file);
-          Reflect.set(data, "avatar", avatar);
-          await API.updateCategory(data);
-        },
-        false
-      );
-      fileUploadDOM.click();
-    };
-
-    const addCodeSnippet = () => {
-      if (!_data.selectedTreeNode) {
-        ElMessage({
-          type: `warning`,
-          message: `请先选择一个树节点【除了全部节点之外】`,
-        });
-        return;
-      } else {
-        if (_data.selectedTreeNode.data.title === `全部`) {
-          ElMessage({
-            type: `warning`,
-            message: `请先选择一个树节点【除了全部节点之外】`,
-          });
-          return;
-        }
-      }
-      const { _id: category } = _data.selectedTreeNode.data;
-      _data.selectedCodeSnippet = null;
-
-      router.push({
-        name: "form",
-        query: {
-          category,
-        },
-      });
-    };
-
-    const removeCodeSnippets = () => {
-      if (_data.multipleSelection.length) {
-        const reqs = _data.multipleSelection.map((_id) => {
-          return API.removeCodeSnippet(_id);
-        });
-        Promise.all(reqs)
-          .then(() => {
-            if (_data.selectedTreeNode) {
-              getCodeSnippetsByCategory(_data.selectedTreeNode.data._id);
-            } else {
-              // getCodeSnippets();
-            }
-            ElMessage({
-              type: "success",
-              message: `删除成功`,
-            });
-          })
-          .catch(console.error);
-      }
-    };
-    const updateCodeSnippet = (codesnippet: any) => {
-      _data.selectedCodeSnippet = codesnippet;
-      router.push({
-        name: "form",
-        query: {
-          _id: codesnippet._id,
-        },
-      });
-    };
 
     const getCategoryAvatar = (category: any) => {
       return (category && category.avatar) || "";
     };
 
+    const doAction = (action: keyof typeof TreeTableActions, data?: any) => {
+      emit("action", { data, action });
+    };
+
     return {
       treeRef,
-      tableLoading,
-      ...toRefs(_data),
       dayjs,
-      getCodeSnippetsByCategory,
-      appendToTree,
-      updateCategory,
-      removeCategories,
-      doCategoryAction,
-      setCategoryAvatar,
-      addCodeSnippet,
-      removeCodeSnippets,
-      updateCodeSnippet,
       getCategoryAvatar,
+      ...TreeTableActions,
+      doAction,
       Plus,
       Edit,
       Delete,
+      keyword: ref(""),
     };
   },
 });

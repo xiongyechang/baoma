@@ -54,3 +54,16 @@ export const BATTERY = {
   EMPTY: "icon-battery-empty",
   CHARGING: "icon-batterycharging",
 } as const;
+
+export const TreeTableActions = {
+  // 操作树组件
+  ADD_TREE_NODE: "ADD_TREE_NODE",
+  UPDATE_TREE_NODE: "UPDATE_TREE_NODE",
+  DELETE_TREE_NODE: "DELETE_TREE_NODE",
+  // 操作表格
+  ADD_TABLE_ROW: "ADD_TABLE_ROW",
+  DELETE_TABLE_ROW: "DELETE_TABLE_ROW",
+  UPDATE_TABLE_ROW: "UPDATE_TABLE_ROW",
+} as const;
+
+export const ADD_ID_LENGTH = 8;

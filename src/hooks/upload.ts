@@ -19,13 +19,13 @@ export const useQiniu = () => {
 
       const putExtra = {
         fname: file.name,
-        mimeType: mime.lookup(file.name),
+        mimeType: mime.getType(file.name) || undefined,
       };
 
       const observable = qiniu.upload(
         file,
         key,
-        store.getters.qiniuToken,
+        store.getters["admin/qiniuToken"],
         putExtra,
         config
       );
@@ -38,7 +38,7 @@ export const useQiniu = () => {
           reject(error);
         },
         complete: (res: any) => {
-          resolve(store.getters.qiniuToken + "/" + res.key);
+          resolve(store.getters["admin/qiniuDomain"] + "/" + res.key);
         },
       };
 

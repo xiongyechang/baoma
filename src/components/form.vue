@@ -1,9 +1,9 @@
 <template>
-  <HtmlMarkdown :value="form.content" @save="onSave"></HtmlMarkdown>
+  <HtmlMarkdown v-model:value="formData.content" @save="onSave"></HtmlMarkdown>
 </template>
 
 <script lang="ts">
-import { reactive, toRefs, defineAsyncComponent, onMounted } from "vue";
+import { defineAsyncComponent, onMounted, ref } from "vue";
 import API from "@/api/api";
 import { HttpResponseCode } from "@/constants/constants";
 import { ElMessage, ElNotification } from "element-plus";
@@ -39,120 +39,53 @@ export default {
   },
   // @ts-ignore
   setup(props) {
-    const store = reactive({
-      dialogVisible: false,
-      list: [],
-      form: {
-        _id: "",
-        title: "",
-        disabled: false,
-        category: props.category,
-        relations: [],
-        content: "",
-      },
-      rules: {
-        category: [{ required: true, trigger: "blur", message: "请选择分类" }],
-        content: [{ required: true, trigger: "blur", message: "请输入内容" }],
-      },
-      categories: [],
-      disabledList: [
-        {
-          label: "是",
-          value: true,
-        },
-        {
-          label: "否",
-          value: false,
-        },
-      ],
+    const formData = ref({
+      _id: "",
+      title: "",
+      disabled: false,
+      category: props.category,
+      relations: [],
+      content: "",
     });
 
     onMounted(() => {
-      // @ts-ignore
-      store.form._id = props._id;
+      if (props._id) {
+        formData.value._id = props._id;
+        getCodeSnippet(props._id);
+      }
     });
 
     const getCodeSnippet = async (_id: string) => {
       try {
         const { code, message, data } = await API.getCodeSnippet(_id);
         if (code === HttpResponseCode.OK) {
-          store.form = data;
+          formData.value = data;
         } else {
           ElMessage.error(message);
         }
       } catch (error) {
         console.error(error);
       }
-    };
-
-    const getCodeSnippets = async (page = 1, limit = 20) => {
-      try {
-        const {
-          code,
-          message,
-          data: { rows },
-        } = await API.getCodeSnippets({
-          page,
-          limit,
-        });
-        if (code === HttpResponseCode.OK) {
-          // @ts-ignore
-          store.list = formatData(rows);
-        } else {
-          ElMessage.error(message);
-        }
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
-    const getCodeCategories = async (page = 1, limit = 100) => {
-      try {
-        const {
-          code,
-          message,
-          data: { rows },
-        } = await API.getCodeCategories({
-          page,
-          limit,
-        });
-        if (code === HttpResponseCode.OK) {
-          store.categories = rows;
-        } else {
-          ElMessage.error(message);
-        }
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
-    const formatData = (rows: any[]) => {
-      return rows.map((row) => ({
-        ...row,
-        avatar: row.category.avatar,
-      }));
     };
 
     const onSave = async (value: string) => {
-      store.form.content = value;
-      const request = store.form._id
+      formData.value.content = value;
+      const request = formData.value._id
         ? API.updateCodeSnippet
         : API.addCodeSnippet;
       try {
         const reg = /^# (.*)\n?/;
-        if (reg.test(store.form.content)) {
-          store.form.title = RegExp.$1;
+        if (reg.test(formData.value.content)) {
+          formData.value.title = RegExp.$1;
         }
-        const { code, message, data } = await request(store.form);
+        const { code, message, data } = await request(formData.value);
         if (code === HttpResponseCode.OK) {
-          Object.assign(store.form, {
+          Object.assign(formData.value, {
             _id: data._id,
           });
-          ElNotification({
+          ElNotification.success({
             message,
-            duration: 3000,
-            type: "success",
-            offset: 100,
+            offset: 18,
           });
         } else {
           ElMessage.error(message);
@@ -162,20 +95,10 @@ export default {
       }
     };
 
-    if (props._id) {
-      getCodeSnippet(props._id);
-    }
-
-    getCodeSnippets();
-
-    getCodeCategories();
-
     return {
-      ...toRefs(store),
-      getCodeSnippet,
-      getCodeSnippets,
-      getCodeCategories,
+      formData,
       onSave,
+      getCodeSnippet,
     };
   },
 };
