@@ -1,5 +1,5 @@
 <template>
-  <HtmlMarkdown v-model:value="formData.content" @save="onSave"></HtmlMarkdown>
+  <HtmlMarkdown :value="formData.content" @save="onSave"></HtmlMarkdown>
 </template>
 
 <script lang="ts">
@@ -95,10 +95,16 @@ export default {
       }
     };
 
+    const onContentChange = (value: string) => {
+      console.count("content change == " + value);
+      formData.value.content = value;
+    };
+
     return {
       formData,
       onSave,
       getCodeSnippet,
+      onContentChange,
     };
   },
 };

@@ -3,7 +3,7 @@
 </template>
 
 <script lang="ts">
-import { ref, defineComponent, onMounted, watch } from "vue";
+import { ref, defineComponent, onMounted, watch, onUnmounted } from "vue";
 import Vditor from "vditor";
 import "vditor/dist/index.css";
 import isImage from "is-image";
@@ -26,25 +26,31 @@ export default defineComponent({
 
     const { upload } = useQiniu();
 
+    const timeoutId = ref();
+
     watch(
       () => props.value,
       (newValue, oldValue) => {
         if (newValue !== oldValue) {
-          setTimeout(() => {
+          clearTimeout(timeoutId.value);
+          timeoutId.value = setTimeout(() => {
             try {
               vditor.value?.setValue(newValue);
-            } catch (e) {
+            } catch (e: any) {
               console.error(e);
               location.reload();
             }
-          }, 100);
+          }, 50);
         }
       }
     );
 
     onMounted(() => {
-      console.count("form-mounted");
       initMarkdown();
+    });
+
+    onUnmounted(() => {
+      clearInterval(timeoutId.value);
     });
 
     const initMarkdown = () => {
@@ -105,12 +111,8 @@ export default defineComponent({
             className: "right",
             icon: '<svg t="1640361319243" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="5443" width="200" height="200"><path d="M1008.00076 6.285714q18.857143 13.714286 15.428571 36.571429l-146.285714 877.714286q-2.857143 16.571429-18.285714 25.714285-8 4.571429-17.714286 4.571429-6.285714 0-13.714286-2.857143l-258.857142-105.714286-138.285715 168.571429q-10.285714 13.142857-28 13.142857-7.428571 0-12.571428-2.285714-10.857143-4-17.428572-13.428572T365.715046 987.428571v-199.428571l493.714285-605.142857-610.857142 528.571428-225.714286-92.571428q-21.142857-8-22.857143-31.428572-1.142857-22.857143 18.285714-33.714285L969.143617 5.142857q8.571429-5.142857 18.285714-5.142857 11.428571 0 20.571429 6.285714z" p-id="5444"></path></svg>',
             click() {
-              // @ts-ignore
-              if (vditor.value && vditor.value.getValue instanceof Function) {
-                // @ts-ignore
-                const value = vditor.value.getValue();
-                emit(`save`, value);
-              }
+              const value = vditor.value?.getValue();
+              emit(`save`, value);
             },
           },
         ],
@@ -122,15 +124,12 @@ export default defineComponent({
             style: "github",
           },
         },
+        value: props.value,
         cache: {
           enable: false,
         },
         counter: {
           enable: true,
-        },
-        input: (v) => {
-          emit("update:value", v);
-          emit("change", v);
         },
         upload: {
           async handler([file]) {
@@ -139,7 +138,7 @@ export default defineComponent({
               // @ts-ignore
               const url = await upload(file);
 
-              let name = file && file.name;
+              const name = file && file.name;
 
               let succFileText = "";
 
@@ -154,10 +153,6 @@ export default defineComponent({
                   succFileText += `\n[${name}](${url})`;
                 }
               }
-
-              // const content = vditor.value?.getValue();
-
-              // vditor.value?.setValue(content + succFileText);
 
               document.execCommand("insertHTML", false, succFileText);
 
