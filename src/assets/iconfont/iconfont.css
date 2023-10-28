@@ -1,0 +1,91 @@
+@font-face {
+  font-family: "iconfont"; /* Project id 2352963 */
+  src: url('iconfont.woff2?t=1695948932195') format('woff2'),
+       url('iconfont.woff?t=1695948932195') format('woff'),
+       url('iconfont.ttf?t=1695948932195') format('truetype');
+}
+
+.iconfont {
+  font-family: "iconfont" !important;
+  font-size: 16px;
+  font-style: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-batterycharging:before {
+  content: "\e61c";
+}
+
+.icon-battery_:before {
+  content: "\e7e3";
+}
+
+.icon-battery_1:before {
+  content: "\e7e4";
+}
+
+.icon-battery-60:before {
+  content: "\e605";
+}
+
+.icon-battery-40:before {
+  content: "\e606";
+}
+
+.icon-battery-20:before {
+  content: "\e607";
+}
+
+.icon-battery-80:before {
+  content: "\e608";
+}
+
+.icon-dev_offline:before {
+  content: "\e641";
+}
+
+.icon-download:before {
+  content: "\e6cf";
+}
+
+.icon-link:before {
+  content: "\e600";
+}
+
+.icon-save:before {
+  content: "\e762";
+}
+
+.icon-image:before {
+  content: "\e71a";
+}
+
+.icon-update:before {
+  content: "\e698";
+}
+
+.icon-battery-charging:before {
+  content: "\e7d1";
+}
+
+.icon-battery-full:before {
+  content: "\e70d";
+}
+
+.icon-battery-empty:before {
+  content: "\e78d";
+}
+
+.icon-wifi-on-line:before {
+  content: "\e75c";
+}
+
+.icon-online:before {
+  content: "\e612";
+}
+
+.icon-wifi-off-line:before {
+  content: "\e759";
+}
+

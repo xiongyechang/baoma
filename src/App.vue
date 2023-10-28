@@ -1,30 +1,33 @@
 <template>
-  <nav>
-    <router-link to="/">Home</router-link> |
-    <router-link to="/about">About</router-link>
-  </nav>
-  <router-view />
+  <top-bar></top-bar>
+  <main>
+    <router-view v-slot="{ Component }">
+      <keep-alive include="web">
+        <component :is="Component" />
+      </keep-alive>
+    </router-view>
+    <router-view name="blank" />
+  </main>
+  <bottom-bar></bottom-bar>
 </template>
 
-<style lang="scss">
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-}
+<script lang="ts">
+import TopBar from "@/components/topbar.vue";
+import BottomBar from "@/components/bottom-bar.vue";
+import { defineComponent } from "vue";
 
-nav {
-  padding: 30px;
+export default defineComponent({
+  name: "App",
+  components: {
+    TopBar,
+    BottomBar,
+  },
+});
+</script>
 
-  a {
-    font-weight: bold;
-    color: #2c3e50;
-
-    &.router-link-exact-active {
-      color: #42b983;
-    }
-  }
+<style>
+main {
+  height: 100%;
+  overflow: hidden;
 }
 </style>
