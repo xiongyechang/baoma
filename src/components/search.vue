@@ -1,11 +1,16 @@
 <template>
   <div class="search-list full-height">
     <div>
-      <el-input placeholder="请输入内容" v-model="keyword" clearable>
+      <el-input
+        placeholder="请输入内容"
+        v-model="keyword"
+        @clear="onClearKeyword"
+        clearable
+      >
         <template #prepend>
           <el-select
             v-model="category"
-            @change="seachCodeSnippets"
+            @change="getCodeSnippets"
             placeholder="请选择"
           >
             <el-option
@@ -19,7 +24,7 @@
           </el-select>
         </template>
         <template #append>
-          <el-button :icon="Search" @click="seachCodeSnippets"></el-button>
+          <el-button :icon="Search" @click="getCodeSnippets"></el-button>
         </template>
       </el-input>
     </div>
@@ -112,6 +117,8 @@ export default defineComponent({
         } = await API.getCodeSnippets({
           page: page.value,
           limit: limit.value,
+          categoryId: category.value,
+          keyword: keyword.value,
         });
         if (code === HttpResponseCode.OK) {
           total.value = count;
@@ -120,39 +127,6 @@ export default defineComponent({
           } else {
             list.value.push.apply(list.value, rows); // 超大数据量时，push方法不创建新的数组，可以降低内存
           }
-          nextTick(() => {
-            handleScroll();
-          });
-        } else {
-          ElMessage.error(message);
-        }
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
-    const seachCodeSnippets = async () => {
-      page.value = 1;
-
-      if (category.value == "0") {
-        getCodeSnippets();
-        return;
-      }
-
-      try {
-        const {
-          code,
-          message,
-          data: { rows, count },
-        } = await API.searchCodeSnippets(
-          keyword.value,
-          category.value,
-          page.value,
-          limit.value
-        );
-        if (code === HttpResponseCode.OK) {
-          list.value = rows;
-          total.value = count;
           nextTick(() => {
             handleScroll();
           });
@@ -182,7 +156,7 @@ export default defineComponent({
             },
             [
               {
-                _id: 0,
+                _id: "",
                 title: "全部",
                 avatar: "https://cdn.xiongyechang.com/all.png",
               },
@@ -205,6 +179,11 @@ export default defineComponent({
       return (category && category.avatar) || "";
     };
 
+    const onClearKeyword = () => {
+      keyword.value = "";
+      getCodeSnippets();
+    };
+
     getCodeCategories();
     getCodeSnippets();
 
@@ -212,13 +191,14 @@ export default defineComponent({
       keyword,
       category,
       Search,
-      seachCodeSnippets,
+      getCodeSnippets,
       options,
       noMore,
       list,
       currentListItem,
       rowClick,
       getCategoryAvatar,
+      onClearKeyword,
     };
   },
 });

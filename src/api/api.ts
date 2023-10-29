@@ -33,11 +33,6 @@ export default {
   removeCodeSnippet(_id: string) {
     return http.delete(`${baseURL}${prefix}${CodeSnippetRoute}?_id=${_id}`);
   },
-  searchCodeSnippets(keyword = "", category = "", page = 1, limit = 20) {
-    return http.get(
-      `${baseURL}${prefix}${CodeSnippetRoute}/search?keyword=${keyword}&category=${category}&page=${page}&limit=${limit}`
-    );
-  },
   getCodeCategories(params: { page: number; limit: number }) {
     return http.get(
       `${baseURL}${prefix}${CodeCategoryRoute}?${toQuerystring(params)}`
