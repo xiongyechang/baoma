@@ -3,9 +3,35 @@
     :treeConfig="treeConfig"
     :tableConfig="tableConfig"
     :paginationConfig="paginationConfig"
-    @action="doAction"
   >
-    <template #default="{ data }">
+    <!-- 树组件的分组 -->
+    <template #tree-control-bar="{ data }">
+      <el-row :gutter="10" style="padding: 5px 5px 5px 25px; height: 40px">
+        <el-col>
+          <el-button
+            type="primary"
+            :icon="Plus"
+            @click="doAction(ADD_TREE_NODE, data)"
+            >添加</el-button
+          >
+          <el-button
+            type="success"
+            :icon="Edit"
+            @click="doAction(UPDATE_TREE_NODE, data)"
+            >更新</el-button
+          >
+          <el-button
+            type="danger"
+            :icon="Delete"
+            @click="doAction(DELETE_TREE_NODE, data)"
+            >删除</el-button
+          >
+        </el-col>
+      </el-row>
+    </template>
+
+    <!-- 树组件的插槽 -->
+    <template #tree-list="{ data }">
       <template v-if="data.data.editable">
         <input
           type="text"
@@ -32,11 +58,79 @@
         </div>
       </template>
     </template>
+
+    <!-- 树组件的分组 -->
+    <template #table-control-bar>
+      <el-row class="table-widget-top">
+        <el-col :span="8">
+          <el-button
+            type="primary"
+            :icon="Plus"
+            @click="doAction(ADD_TABLE_ROW, null)"
+            >添加</el-button
+          >
+          <el-button
+            type="danger"
+            :icon="Delete"
+            @click="doAction(DELETE_TABLE_ROW, null)"
+            >删除</el-button
+          >
+        </el-col>
+        <el-col :span="8"></el-col>
+        <el-col :span="8">
+          <el-input placeholder="请输入搜索词" v-model="keyword"> </el-input>
+        </el-col>
+      </el-row>
+    </template>
+
+    <!-- 列表组件的插槽 -->
+    <template #table-list>
+      <el-table-column type="selection" width="40"></el-table-column>
+      <el-table-column label="类型" width="60">
+        <template #default="scope">
+          <img
+            :src="getCategoryAvatar(scope.row.category)"
+            alt=""
+            width="20"
+            height="20"
+          />
+        </template>
+      </el-table-column>
+      <el-table-column label="编号" width="100">
+        <template #default="scope">{{ scope.$index + 1 }}</template>
+      </el-table-column>
+      <el-table-column
+        prop="title"
+        label="标题"
+        show-overflow-tooltip
+      ></el-table-column>
+      <el-table-column prop="createdAt" width="160" label="发布日期">
+        <template #default="scope">
+          {{ dayjs(scope.row.createdAt).format("YYYY-MM-DD hh:mm:ss") }}
+        </template>
+      </el-table-column>
+      <el-table-column prop="updatedAt" width="160" label="更新日期">
+        <template #default="scope">
+          {{ dayjs(scope.row.updatedAt).format("YYYY-MM-DD hh:mm:ss") }}
+        </template>
+      </el-table-column>
+      <el-table-column fixed="right" label="操作" width="120">
+        <template #default="scope">
+          <el-button
+            @click="doAction(UPDATE_TABLE_ROW, scope.row)"
+            size="small"
+            :icon="Edit"
+            >更新</el-button
+          >
+        </template>
+      </el-table-column>
+    </template>
   </tree-table>
   <div></div>
 </template>
 
 <script lang="ts">
+import { Plus, Edit, Delete } from "@element-plus/icons-vue";
 import { defineComponent, ref } from "vue";
 import { ElMessage } from "element-plus";
 import API from "@/api/api";
@@ -55,6 +149,7 @@ import Node from "element-plus/es/components/tree/src/model/node";
 import randomstring from "randomstring";
 import { useRouter } from "vue-router";
 import { useQiniu } from "@/hooks";
+import dayjs from "dayjs";
 
 export default defineComponent({
   name: "admin-page",
@@ -67,9 +162,15 @@ export default defineComponent({
     const { upload } = useQiniu();
 
     const page = ref(1),
-      limit = ref(20);
+      limit = ref(20),
+      keyword = ref("");
 
     const multipleSelection = ref<string[]>([]);
+
+    const getId = (node?: Node) =>
+      node && node.data && node.data._id === "#0001"
+        ? undefined
+        : node?.data?._id;
 
     const getCodeCategories = async () => {
       try {
@@ -110,18 +211,13 @@ export default defineComponent({
 
     const selectedTreeNode = ref<Node>();
 
-    const getCodeSnippets = async (
-      page: number,
-      limit: number,
-      categoryId?: string,
-      keyword = ""
-    ) => {
+    const getCodeSnippets = async () => {
       try {
         const { code, message, data } = await API.getCodeSnippets({
-          page,
-          limit,
-          categoryId,
-          keyword,
+          page: page.value,
+          limit: limit.value,
+          categoryId: getId(selectedTreeNode.value),
+          keyword: keyword.value,
         });
         if (code === HttpResponseCode.OK) {
           tableConfig.value.data = data.rows;
@@ -134,22 +230,18 @@ export default defineComponent({
       }
     };
 
-    getCodeSnippets(page.value, limit.value);
+    getCodeSnippets();
 
     const onNodeClick = (
       data: TreeNodeData,
       node: Node,
       e: MouseEvent
     ): MouseEvent => {
+      keyword.value = "";
       selectedTreeNode.value = node;
-      getCodeSnippets(page.value, limit.value, getId(node));
+      getCodeSnippets();
       return e;
     };
-
-    const getId = (node?: Node) =>
-      node && node.data && node.data._id === "#0001"
-        ? undefined
-        : node?.data?._id;
 
     const selectionChange = (list: CodeSnippetItem[]) => {
       multipleSelection.value = list.map(({ _id }) => _id);
@@ -177,13 +269,13 @@ export default defineComponent({
 
     const currentPageChange = (pageNo: number) => {
       page.value = pageNo;
-      getCodeSnippets(page.value, limit.value, getId(selectedTreeNode.value));
+      getCodeSnippets();
     };
 
     const currentSizeChange = (size: number) => {
       page.value = 1;
       limit.value = size;
-      getCodeSnippets(page.value, limit.value, getId(selectedTreeNode.value));
+      getCodeSnippets();
     };
 
     const paginationConfig = ref({
@@ -242,14 +334,7 @@ export default defineComponent({
       }
     };
 
-    const doAction = ({
-      action,
-      data,
-    }: {
-      action: keyof typeof TreeTableActions;
-      data: any;
-    }) => {
-      console.log(action, data);
+    const doAction = (action: keyof typeof TreeTableActions, data: any) => {
       typeof doActionMethods[action] === "function" &&
         doActionMethods[action](data);
     };
@@ -297,12 +382,7 @@ export default defineComponent({
           });
           Promise.all(reqs)
             .then(() => {
-              getCodeSnippets(
-                page.value,
-                limit.value,
-                getId(selectedTreeNode.value)
-              );
-
+              getCodeSnippets();
               ElMessage({
                 type: "success",
                 message: `删除成功`,
@@ -355,14 +435,27 @@ export default defineComponent({
       },
     };
 
+    const getCategoryAvatar = (category: any) => {
+      return (category && category.avatar) || "";
+    };
+
     return {
       treeConfig,
       tableConfig,
       paginationConfig,
       setCategoryAvatar,
+      getCategoryAvatar,
       doCategoryAction,
       doAction,
+      dayjs,
+      Plus,
+      Edit,
+      Delete,
+      keyword,
+      ...TreeTableActions,
     };
   },
 });
 </script>
+
+<style lang="scss"></style>
