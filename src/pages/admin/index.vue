@@ -78,7 +78,11 @@
         </el-col>
         <el-col :span="8"></el-col>
         <el-col :span="8">
-          <el-input placeholder="请输入搜索词" v-model="keyword"> </el-input>
+          <el-input
+            placeholder="请输入搜索词"
+            v-model="keyword"
+            @input="searchCodeSnippets"
+          ></el-input>
         </el-col>
       </el-row>
     </template>
@@ -228,6 +232,11 @@ export default defineComponent({
       } catch (error) {
         console.error(error);
       }
+    };
+
+    const searchCodeSnippets = () => {
+      page.value = 1;
+      getCodeSnippets();
     };
 
     getCodeSnippets();
@@ -446,6 +455,7 @@ export default defineComponent({
       setCategoryAvatar,
       getCategoryAvatar,
       doCategoryAction,
+      searchCodeSnippets,
       doAction,
       dayjs,
       Plus,

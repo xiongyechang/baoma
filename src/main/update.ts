@@ -1,7 +1,6 @@
 import { CancellationToken, autoUpdater } from "electron-updater";
 import { BrowserWindow, ipcMain, app } from "electron";
 import { Update } from "@/constants/constants";
-import { baseURL } from "../config/config";
 
 if (process.env.NODE_ENV === "development") {
   Object.defineProperty(app, "isPackaged", {
