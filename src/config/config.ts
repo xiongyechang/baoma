@@ -9,6 +9,8 @@ if (process.env.NODE_ENV === "development") {
   URL = `${protocol}://${host}`;
 }
 
-// URL = `http://cs.xiongyechang.com`;
+URL = `http://cs.xiongyechang.com`;
+
+// URL = `http://47.111.130.92:8888`;
 
 export const baseURL = URL;
