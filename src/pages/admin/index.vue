@@ -320,16 +320,16 @@ export default defineComponent({
 
     const doCategoryAction = async (category: any, event: Event) => {
       let request = null;
-      if (category._id.length === ADD_ID_LENGTH) {
+      if (category.data._id.length === ADD_ID_LENGTH) {
         request = API.addCategory;
       } else {
         request = API.updateCategory;
       }
       try {
-        const { code, message, data } = await request(category);
+        const { code, message, data } = await request(category.data);
         if (code === HttpResponseCode.OK) {
           ElMessage.success(message);
-          Object.assign(category, {
+          Object.assign(category.data, {
             _id: data._id,
             // @ts-ignore
             title: event.target?.value,
@@ -429,7 +429,6 @@ export default defineComponent({
         if (!selectedTreeNode.length) {
           return ElMessage.warning("至少选择一项");
         }
-
         const reqs = selectedTreeNode.map((category: any) => {
           return API.removeCategory(category);
         });
