@@ -3,7 +3,7 @@ import store from "@/store";
 
 const routes: Array<RouteRecordRaw> = [
   {
-    path: "/login",
+    path: "/",
     name: "login",
     meta: {
       title: "后台登录",
@@ -15,26 +15,6 @@ const routes: Array<RouteRecordRaw> = [
       blank: () => import(`@/pages/login/index.vue`),
       // resolve => require(['@/pages/login/index.vue'], resolve)
     },
-  },
-  // {
-  //     path: '/',
-  //     name: 'index',
-  //     meta: {
-  //         title: '首页',
-  //         keepAlive: false,
-  //         requireAuth: false
-  //     },
-  //     component: () => import(`@/pages/index/index.vue`)
-  // },
-  {
-    path: "/",
-    name: "web",
-    meta: {
-      title: "代码片段页",
-      keepAlive: false,
-      requireAuth: false,
-    },
-    component: () => import(`@/pages/code/index.vue`),
   },
   {
     path: "/admin",
@@ -60,12 +40,6 @@ const routes: Array<RouteRecordRaw> = [
     },
     component: () => import(`@/components/form.vue`),
   },
-  // {
-  //     path: "*",
-  //     redirect: {
-  //         name: 'admin'
-  //     }
-  // }
 ];
 
 const router = createRouter({
@@ -75,8 +49,10 @@ const router = createRouter({
 
 router.beforeEach(function (to, from, next) {
   const requireAuth = to.meta.requireAuth;
+  console.log("store.state===", store);
   if (requireAuth) {
-    const isLogin = true; // store.state.admin.isLogin;
+    // @ts-ignore
+    const isLogin = store.state.admin.isLogin;
     if (isLogin) {
       next();
     } else {

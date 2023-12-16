@@ -43,12 +43,12 @@
           </el-row>
         </el-form-item>
       </el-form>
-      <el-row type="flex" justify="center">
+      <el-row type="flex" justify="center" align="middle">
         <el-col :span="4">
           <el-button @click="submitForm" type="primary">登录</el-button>
         </el-col>
         <el-col :span="4">
-          <el-button @click="forgetPwd" type="text">忘记密码</el-button>
+          <el-button @click="forgetPwd">忘记密码</el-button>
         </el-col>
       </el-row>
     </div>
@@ -60,7 +60,7 @@ import { ref, reactive, toRefs } from "vue";
 import API from "@/api/api";
 import JSEncrypt from "jsencrypt";
 import { HttpResponseCode } from "@/constants/constants";
-import { ElMessage } from "element-plus";
+import { ElMessage, ElMessageBox } from "element-plus";
 import { useStore } from "vuex";
 import { useRouter } from "vue-router";
 
@@ -74,7 +74,6 @@ export default {
       ruleForm: {
         username: "xiongyechang",
         password: "000000000",
-        email: "",
         verify_code: "",
       },
       rules: {
@@ -97,15 +96,6 @@ export default {
             min: 6,
             max: 12,
             message: "长度在6-12个字符",
-            trigger: "blur",
-          },
-        ],
-        email: [
-          { required: false, message: "请输入邮箱", trigger: "blur" },
-          {
-            partten:
-              /^[A-Za-z\d]+([-_.][A-Za-z\d]+)*@([A-Za-z\d]+[-.])+[A-Za-z\d]{2,4}$/,
-            message: "邮箱格式错误",
             trigger: "blur",
           },
         ],
@@ -192,16 +182,23 @@ export default {
     };
 
     const forgetPwd = async () => {
-      let email;
-      if (_data.ruleForm.email) {
-        email = _data.ruleForm.email;
-      } else {
-        email = prompt("请输入邮箱:") as string;
-      }
-      if (email.trim()) {
-        let { msg } = await API.forgetPwd(email);
-        ElMessage.success(msg);
-      }
+      ElMessageBox.prompt("请输入你的邮箱", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        inputPattern:
+          /[\w!#$%&'*+/=?^_`{|}~-]+(?:\.[\w!#$%&'*+/=?^_`{|}~-]+)*@(?:[\w](?:[\w-]*[\w])?\.)+[\w](?:[\w-]*[\w])?/,
+        inputErrorMessage: "邮箱格式错误",
+      })
+        .then(async ({ value }) => {
+          const { msg } = await API.forgetPwd(value);
+          ElMessage.success(msg);
+        })
+        .catch(() => {
+          ElMessage({
+            type: "info",
+            message: "取消输入",
+          });
+        });
     };
 
     // 先获取公钥, 再获取验证码, 这样前一个接口返回的cookie正好被后面的接口使用

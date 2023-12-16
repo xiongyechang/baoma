@@ -2,6 +2,9 @@ const { defineConfig } = require("@vue/cli-service");
 const { version, name } = require("./package.json");
 const os = require("os");
 const path = require("path");
+const { default: AutoImport } = require("unplugin-auto-import/webpack");
+const { default: Components } = require("unplugin-vue-components/webpack");
+const { ElementPlusResolver } = require("unplugin-vue-components/resolvers");
 
 const Platform = {
   Windows: "Windows_NT",
@@ -31,6 +34,14 @@ module.exports = defineConfig({
         "@": path.resolve(__dirname, "src"),
       },
     },
+    plugins: [
+      AutoImport({
+        resolvers: [ElementPlusResolver()],
+      }),
+      Components({
+        resolvers: [ElementPlusResolver()],
+      }),
+    ],
   },
   pluginOptions: {
     electronBuilder: {
