@@ -3,7 +3,7 @@ import store from "@/store";
 
 const routes: Array<RouteRecordRaw> = [
   {
-    path: "/",
+    path: "/login",
     name: "login",
     meta: {
       title: "后台登录",
@@ -17,7 +17,7 @@ const routes: Array<RouteRecordRaw> = [
     },
   },
   {
-    path: "/admin",
+    path: "/",
     name: "admin",
     meta: {
       title: "管理端",

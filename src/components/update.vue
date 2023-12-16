@@ -31,7 +31,7 @@
 </template>
 
 <script lang="ts">
-import { ipcRenderer } from "electron";
+import { IpcRendererEvent, ipcRenderer } from "electron";
 import { ref, onMounted, defineComponent } from "vue";
 import { Update } from "@/constants/constants";
 
@@ -46,7 +46,7 @@ export default defineComponent({
     onMounted(() => {
       const methods: Array<{
         key: string;
-        method: (event: Event, progress: any) => void;
+        method: (event: IpcRendererEvent, ...args: any[]) => void;
       }> = [
         {
           key: Update.IsUpdate, // 有更新
@@ -57,14 +57,14 @@ export default defineComponent({
         },
         {
           key: Update.DownloadProgress, // 正在更新
-          method(event: Event, progress: any) {
+          method(event, progress) {
             updating.value = true;
             percentage.value = progress.percent.toFixed(2);
           },
         },
         {
           key: Update.Message, // 有消息
-          method(event: Event, data: any) {
+          method(event: IpcRendererEvent, data) {
             console.log(event, data);
           },
         },

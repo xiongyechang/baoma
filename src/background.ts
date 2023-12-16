@@ -26,14 +26,9 @@ async function createWindow() {
     minimizable: true,
     icon: path.join(__dirname, "..", "public", "favicon.ico"),
     webPreferences: {
-      // Use pluginOptions.nodeIntegration, leave this alone
-      // See nklayman.github.io/vue-cli-plugin-electron-builder/guide/security.html#node-integration for more info
       nodeIntegration: true, // process.env.ELECTRON_NODE_INTEGRATION
       contextIsolation: false,
       webSecurity: false,
-      // 在electron 10.0.0之后，remote模块默认关闭
-      // 必须手动设置webPreferences中的enableRemoteModule为true之后才能使用
-      enableRemoteModule: true, // 这里是关键设置
     },
   });
 

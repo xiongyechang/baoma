@@ -9,33 +9,19 @@
         <i class="iconfont" :class="[networkInfo.icon]"></i>
       </span>
       <Update />
-      <span
-        class="opt-hover opt"
-        title="后台管理系统"
-        @click.stop="goLoginPage"
-      >
-        <el-icon><UserFilled /></el-icon>
-      </span>
     </div>
   </div>
 </template>
 
 <script lang="ts">
 import { computed, defineComponent } from "vue";
-import { useRoute, useRouter } from "vue-router";
 import Update from "@/components/update.vue";
 import { NETWORK, BATTERY } from "@/constants/constants";
-import { UserFilled } from "@element-plus/icons-vue";
 import { useBattery, useNetwork } from "@vueuse/core";
 export default defineComponent({
   name: "bottom-bar",
-  components: { Update, UserFilled },
+  components: { Update },
   setup() {
-    // 获取路由器实例
-    const router = useRouter();
-    // route是响应式对象,可监控器变化
-    const route = useRoute();
-
     const { isOnline, effectiveType, type } = useNetwork();
 
     const networkInfo = computed(() => {
@@ -135,19 +121,9 @@ export default defineComponent({
         : { icon: BATTERY.EMPTY, number: batteryPercentage(level.value) };
     });
 
-    const goLoginPage = () => {
-      const name = route.name;
-      if (name === "admin") {
-        router.replace({ name: "web" });
-      } else {
-        router.push({ name: "admin" });
-      }
-    };
-
     return {
       batteryInfo,
       networkInfo,
-      goLoginPage,
     };
   },
 });
@@ -181,17 +157,6 @@ export default defineComponent({
       color: #fff;
       -webkit-app-region: no-drag;
     }
-  }
-
-  .opt-hover {
-    cursor: pointer;
-    &:hover {
-      background: red;
-    }
-  }
-
-  .iconfont-title {
-    font-size: 12px;
   }
 }
 </style>

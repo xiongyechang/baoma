@@ -1,9 +1,7 @@
 <template>
   <div class="container">
     <div class="main">
-      <div class="main_login">
-        <p class="main_login-title">登录</p>
-      </div>
+      <h2>登录</h2>
       <el-form
         ref="ruleFormRef"
         :model="ruleForm"
@@ -29,7 +27,7 @@
           ></el-input>
         </el-form-item>
         <el-form-item label="验证码:" prop="verify_code">
-          <el-row>
+          <el-row justify="center" align="top">
             <el-col :span="12">
               <el-input
                 class="input"
@@ -42,15 +40,11 @@
             </el-col>
           </el-row>
         </el-form-item>
-      </el-form>
-      <el-row type="flex" justify="center" align="middle">
-        <el-col :span="4">
+        <el-form-item>
           <el-button @click="submitForm" type="primary">登录</el-button>
-        </el-col>
-        <el-col :span="4">
           <el-button @click="forgetPwd">忘记密码</el-button>
-        </el-col>
-      </el-row>
+        </el-form-item>
+      </el-form>
     </div>
   </div>
 </template>
@@ -234,16 +228,11 @@ export default {
   .main {
     text-align: center;
     background-color: #ffffff;
-    padding: 20px;
-    border-radius: 1px;
+    padding: 0 20px;
+    border-radius: 5px;
     width: 30%;
-    &_login {
-      margin: 0 0 10px 0;
-      border-bottom: 1px dashed #dcdfe6;
-      &-title {
-        font-size: 20px;
-        line-height: 1.5em;
-      }
+    h2 {
+      margin: 10px 0;
     }
     .input {
       font-size: 16px;

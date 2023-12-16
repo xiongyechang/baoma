@@ -87,13 +87,3 @@ height: 0px;
 }
 
 */
-.hljs {
-  font-size: 16px;
-  line-height: 26px;
-  border-radius: 5px;
-}
-
-.hljs img {
-  width: 100%;
-  overflow: auto;
-}
