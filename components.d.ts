@@ -24,7 +24,6 @@ declare module 'vue' {
     ElTree: typeof import('element-plus/es')['ElTree']
     Empty: typeof import('./src/components/empty.vue')['default']
     Form: typeof import('./src/components/form.vue')['default']
-    HtmlMarkdown: typeof import('./src/components/html-markdown.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     TopBar: typeof import('./src/components/top-bar.vue')['default']

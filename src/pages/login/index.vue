@@ -199,8 +199,9 @@ export default {
     // 如果并行发送请求, 则会请求回来两个不同的cookie, 登陆时, 请求发送的cookie是不对的,
     // 无法验证 验证码的准确性
     const asyncRequest = async function () {
-      await getPublicKey();
-      await getVerifyCode();
+      getPublicKey().then(() => {
+        getVerifyCode();
+      });
     };
 
     asyncRequest();

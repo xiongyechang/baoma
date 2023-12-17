@@ -10,6 +10,6 @@ if (process.env.NODE_ENV === "development") {
 }
 
 //URL = `http://cs.xiongyechang.com`;
-URL = `http://47.111.130.92:9090`;
+// URL = `http://47.111.130.92:9090`;
 
 export const baseURL = URL;

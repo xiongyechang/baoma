@@ -62,7 +62,7 @@ axios.interceptors.response.use(
 );
 
 const request = (method: Method, url: string, data?: Record<string, any>) => {
-  let args = null;
+  let args = {};
 
   if (method === "GET" || method === "DELETE") {
     args = {

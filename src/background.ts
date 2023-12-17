@@ -1,12 +1,12 @@
 "use strict";
-
 import { app, protocol, BrowserWindow } from "electron";
 import { createProtocol } from "vue-cli-plugin-electron-builder/lib";
 import installExtension, { VUEJS3_DEVTOOLS } from "electron-devtools-installer";
-const isDevelopment = process.env.NODE_ENV !== "production";
 import * as remoteMain from "@electron/remote/main";
+import { useCookie } from "@/main/cookie";
 import path from "path";
 
+const isDevelopment = process.env.NODE_ENV !== "production";
 // Scheme must be registered before the app is ready
 protocol.registerSchemesAsPrivileged([
   { scheme: "app", privileges: { secure: true, standard: true } },
@@ -17,9 +17,8 @@ async function createWindow() {
   const win = new BrowserWindow({
     width: 1366,
     height: 768,
-    title: "baoma",
+    title: `${app.getName()}@${app.getVersion()}`,
     frame: false,
-    // transparent: true,
     minWidth: 1366,
     minHeight: 768,
     maximizable: true,
@@ -36,7 +35,6 @@ async function createWindow() {
   remoteMain.initialize();
 
   require("./main/update");
-  // import("./main/update");
 
   if (process.env.WEBPACK_DEV_SERVER_URL) {
     // Load the url of the dev server if in development mode
@@ -78,6 +76,8 @@ app.on("ready", async () => {
   }
   createWindow();
 });
+
+useCookie();
 
 // Exit cleanly on request from parent process in development mode.
 if (isDevelopment) {

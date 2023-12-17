@@ -319,11 +319,9 @@ export default defineComponent({
     };
 
     const doCategoryAction = async (category: any, event: Event) => {
-      let request = null;
+      let request = API.updateCategory;
       if (category.data._id.length === ADD_ID_LENGTH) {
         request = API.addCategory;
-      } else {
-        request = API.updateCategory;
       }
       try {
         const { code, message, data } = await request(category.data);
