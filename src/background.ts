@@ -77,7 +77,7 @@ app.on("ready", async () => {
   createWindow();
 });
 
-useCookie();
+// useCookie();
 
 // Exit cleanly on request from parent process in development mode.
 if (isDevelopment) {
