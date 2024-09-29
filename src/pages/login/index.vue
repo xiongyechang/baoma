@@ -51,7 +51,12 @@
 
 <script lang="ts">
 import { ref, reactive, toRefs } from "vue";
-import API from "@/api/api";
+import {
+  fetchVerifyCode,
+  fetchPublicKey,
+  login,
+  forgetPassword,
+} from "@/api/api";
 import JSEncrypt from "jsencrypt";
 import { HttpResponseCode } from "@/constants/constants";
 import { ElMessage, ElMessageBox } from "element-plus";
@@ -64,7 +69,7 @@ export default {
     const ruleFormRef = ref(null);
 
     const _data = reactive({
-      verifyCodeImg: null,
+      verifyCodeImg: "",
       ruleForm: {
         username: "xiongyechang",
         password: "000000000",
@@ -117,12 +122,8 @@ export default {
 
     const getVerifyCode = async () => {
       try {
-        const { code, message, data } = await API.getVerifyCode();
-        if (code === HttpResponseCode.OK) {
-          _data.verifyCodeImg = data;
-        } else {
-          ElMessage.error(message);
-        }
+        const data = await fetchVerifyCode<string>();
+        _data.verifyCodeImg = data as unknown as string;
       } catch (error) {
         console.error(error);
       }
@@ -130,7 +131,7 @@ export default {
 
     const getPublicKey = async () => {
       try {
-        const { code, message, data } = await API.getPublicKey();
+        const { code, message, data } = await fetchPublicKey();
         if (code === HttpResponseCode.OK) {
           _data.publicKey = data;
         } else {
@@ -150,7 +151,8 @@ export default {
             let username = _data.ruleForm.username;
             let password = encrypt.encrypt(_data.ruleForm.password);
             let verify_code = _data.ruleForm.verify_code;
-            const { code, message, data } = await API.login({
+            debugger;
+            const { code, message, data } = await login({
               username,
               password,
               verify_code,
@@ -184,8 +186,8 @@ export default {
         inputErrorMessage: "邮箱格式错误",
       })
         .then(async ({ value }) => {
-          const { msg } = await API.forgetPwd(value);
-          ElMessage.success(msg);
+          const { message } = await forgetPassword(value);
+          ElMessage.success(message);
         })
         .catch(() => {
           ElMessage({

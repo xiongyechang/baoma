@@ -1,11 +1,11 @@
-import API from "@/api/api";
+import { fetchQiniuToken, fetchQiniuDomain } from "@/api/api";
 import { HttpResponseCode } from "@/constants/constants";
 import { ActionContext } from "vuex";
 import { State } from "..";
 
 // 请求七牛云的token
 const getQiniuToken = (context: ActionContext<State, any>) => {
-  API.getQiniuToken()
+  fetchQiniuToken()
     .then(({ code, data }) => {
       if (code === HttpResponseCode.OK) {
         context.commit("setQiniuToken", data);
@@ -15,7 +15,7 @@ const getQiniuToken = (context: ActionContext<State, any>) => {
 };
 
 const getQiniuDomain = (context: ActionContext<State, any>) => {
-  API.getQiniuDomain()
+  fetchQiniuDomain()
     .then(({ code, data }) => {
       if (code === HttpResponseCode.OK) {
         context.commit("setQiniuDomain", data);

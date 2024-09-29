@@ -5,26 +5,11 @@
     :paginationConfig="paginationConfig"
   >
     <!-- 树组件的分组 -->
-    <template #tree-control-bar="{ data }">
+    <template #tree-control-bar>
       <el-row :gutter="10" style="padding: 5px 5px 5px 25px; height: 40px">
         <el-col>
-          <el-button
-            type="primary"
-            :icon="Plus"
-            @click="doAction(ADD_TREE_NODE, data)"
+          <el-button type="primary" :icon="Plus" @click="openUpdateDialog"
             >添加</el-button
-          >
-          <el-button
-            type="success"
-            :icon="Edit"
-            @click="doAction(UPDATE_TREE_NODE, data)"
-            >更新</el-button
-          >
-          <el-button
-            type="danger"
-            :icon="Delete"
-            @click="doAction(DELETE_TREE_NODE, data)"
-            >删除</el-button
           >
         </el-col>
       </el-row>
@@ -32,31 +17,24 @@
 
     <!-- 树组件的插槽 -->
     <template #tree-list="{ data }">
-      <template v-if="data.data.editable">
-        <input
-          type="text"
-          @blur="doCategoryAction(data, $event)"
-          v-model="data.data.title"
-          @click.prevent.stop
-        />
-      </template>
-      <template v-else>
-        <div class="flex-center-start">
-          <input
-            :id="data.data._id"
-            type="file"
-            :data-id="data.data._id"
-            style="width: 0; height: 0; overflow: hidden"
-          />
-          <img
-            :src="data.data.avatar"
-            height="16"
-            width="16"
-            @click.stop.prevent="setCategoryAvatar(data.data)"
-          />
-          <span class="category-title">{{ data.data.title }}</span>
-        </div>
-      </template>
+      <img :src="data.data.avatar" width="18" height="18" alt="" />
+      <span class="category-title">{{ data.data.title }}</span>
+      <el-space :size="10">
+        <el-icon size="18px" @click="openUpdateDialog(data)">
+          <Edit />
+        </el-icon>
+
+        <el-popconfirm
+          title="Are you sure to delete this?"
+          @confirm="onRemoveDialog(data)"
+        >
+          <template #reference>
+            <el-icon size="18px">
+              <Delete />
+            </el-icon>
+          </template>
+        </el-popconfirm>
+      </el-space>
     </template>
 
     <!-- 树组件的分组 -->
@@ -70,10 +48,14 @@
             >添加</el-button
           >
           <el-button
+            :disabled="!selectedTableRow.length"
             type="danger"
             :icon="Delete"
-            @click="doAction(DELETE_TABLE_ROW, null)"
-            >删除</el-button
+            @click="doAction(DELETE_MULTIPLE_TABLE_ROW, null)"
+            >删除
+            {{
+              selectedTableRow.length ? selectedTableRow.length : null
+            }}</el-button
           >
         </el-col>
         <el-col :span="8"></el-col>
@@ -118,26 +100,89 @@
           {{ dayjs(scope.row.updatedAt).format("YYYY-MM-DD hh:mm:ss") }}
         </template>
       </el-table-column>
-      <el-table-column fixed="right" label="操作" width="120">
+      <el-table-column fixed="right" label="操作" width="170">
         <template #default="scope">
           <el-button
             @click="doAction(UPDATE_TABLE_ROW, scope.row)"
             size="small"
             :icon="Edit"
+            type="primary"
             >更新</el-button
           >
+
+          <el-popconfirm
+            title="Are you sure to delete this?"
+            @confirm="doAction(DELETE_TABLE_ROW, scope.row)"
+          >
+            <template #reference>
+              <el-button size="small" :icon="Delete" type="danger"
+                >删除</el-button
+              >
+            </template>
+          </el-popconfirm>
         </template>
       </el-table-column>
     </template>
   </tree-table>
-  <div></div>
+
+  <el-dialog v-model="dialogFormVisible" title="修改分类" width="500">
+    <el-form :model="form">
+      <el-form-item label="标题">
+        <el-input v-model="form.title" autocomplete="off" />
+      </el-form-item>
+      <el-form-item label="图片">
+        <el-upload
+          class="avatar-uploader"
+          v-model:file-list="fileList"
+          :show-file-list="false"
+          :on-change="handleFileChange"
+          :http-request="onUploadToQiniu"
+        >
+          <img
+            v-if="form.avatar"
+            :src="form.avatar"
+            width="80"
+            height="80"
+            class="avatar"
+            style="margin-top: 16px"
+            alt=""
+          />
+          <template v-else>
+            <el-icon class="el-icon--upload"><upload-filled /></el-icon>
+            <div class="el-upload__text">
+              Drop file here or <em>click to upload</em>
+            </div>
+          </template>
+        </el-upload>
+      </el-form-item>
+    </el-form>
+    <template #footer>
+      <div class="dialog-footer">
+        <el-button @click="dialogFormVisible = false">Cancel</el-button>
+        <el-button
+          type="primary"
+          @click="doAction(ADD_OR_UPDATE_TREE_NODE, null)"
+        >
+          Confirm
+        </el-button>
+      </div>
+    </template>
+  </el-dialog>
 </template>
 
 <script lang="ts">
-import { Plus, Edit, Delete } from "@element-plus/icons-vue";
-import { defineComponent, ref } from "vue";
+import { Plus, Edit, Delete, UploadFilled } from "@element-plus/icons-vue";
+import { defineComponent, ref, reactive } from "vue";
 import { ElMessage } from "element-plus";
-import API from "@/api/api";
+import {
+  removeCategory,
+  updateCategory,
+  addCategory,
+  removeCodeSnippet,
+  fetchCodeCategories,
+  fetchCodeSnippets,
+  removeCodeSnippets,
+} from "@/api/api";
 import TreeTable from "@/components/tree-table.vue";
 import {
   ADD_ID_LENGTH,
@@ -150,26 +195,38 @@ import {
   TreeNodeData,
 } from "element-plus/es/components/tree/src/tree.type";
 import Node from "element-plus/es/components/tree/src/model/node";
-import randomstring from "randomstring";
 import { useRouter } from "vue-router";
 import { useQiniu } from "@/hooks";
 import dayjs from "dayjs";
+import { toRaw, Ref } from "vue";
 
 export default defineComponent({
   name: "admin-page",
   components: {
     TreeTable,
+    Delete,
+    Edit,
+    UploadFilled,
   },
   setup() {
     const router = useRouter();
 
     const { upload } = useQiniu();
 
+    const dialogFormVisible = ref(false);
+    const formLabelWidth = "80px";
+
+    const form = reactive({
+      _id: "",
+      title: "",
+      avatar: "",
+    });
+
+    const fileList = ref<File[]>([]);
+
     const page = ref(1),
       limit = ref(20),
       keyword = ref("");
-
-    const multipleSelection = ref<string[]>([]);
 
     const getId = (node?: Node) =>
       node && node.data && node.data._id === "#0001"
@@ -178,7 +235,7 @@ export default defineComponent({
 
     const getCodeCategories = async () => {
       try {
-        const { code, message, data } = await API.getCodeCategories({
+        const { code, message, data } = await fetchCodeCategories({
           page: 1,
           limit: 100,
         });
@@ -195,12 +252,7 @@ export default defineComponent({
               _id,
               title: "全部",
               avatar: "https://cdn.xiongyechang.com/01y2y1pi-all.png",
-              editable: false,
-              // @ts-ignore
-              children: rows.map((item) => ({
-                ...item,
-                editable: false,
-              })),
+              children: rows,
             } as const,
           ];
         } else {
@@ -217,7 +269,7 @@ export default defineComponent({
 
     const getCodeSnippets = async () => {
       try {
-        const { code, message, data } = await API.getCodeSnippets({
+        const { code, message, data } = await fetchCodeSnippets({
           page: page.value,
           limit: limit.value,
           categoryId: getId(selectedTreeNode.value),
@@ -252,21 +304,21 @@ export default defineComponent({
       return e;
     };
 
-    const selectionChange = (list: CodeSnippetItem[]) => {
-      multipleSelection.value = list.map(({ _id }) => _id);
-    };
-
     const treeConfig = ref({
       data: [],
       defaultExpandedKeys: [] as TreeKey[],
       indent: 0,
       props: {},
       nodeKey: "_id",
-      showCheckbox: true,
       expandOnClickNode: false,
       highlightCurrent: true,
       onNodeClick: onNodeClick,
     });
+
+    const selectedTableRow = ref<string[]>([]);
+    const selectionChange = (selection: Array<CodeSnippetItem>) => {
+      selectedTableRow.value = selection.map((item) => item._id);
+    };
 
     const tableConfig = ref({
       data: [],
@@ -288,7 +340,6 @@ export default defineComponent({
     };
 
     const paginationConfig = ref({
-      size: "mini",
       background: true,
       "onUpdate:current-page": page.value,
       "onUpdate:page-size": limit.value,
@@ -299,48 +350,6 @@ export default defineComponent({
       onSizeChange: currentSizeChange,
     });
 
-    const setCategoryAvatar = async (data: any) => {
-      const fileUploadDOM = document.getElementById(
-        `${data._id}`
-      ) as HTMLInputElement;
-      fileUploadDOM.addEventListener(
-        "change",
-        async (event: Event) => {
-          // @ts-ignore
-          const file = event.target?.files[0];
-          // @ts-ignore
-          const avatar = await upload(file);
-          Reflect.set(data, "avatar", avatar);
-          await API.updateCategory(data);
-        },
-        false
-      );
-      fileUploadDOM.click();
-    };
-
-    const doCategoryAction = async (category: any, event: Event) => {
-      let request = API.updateCategory;
-      if (category.data._id.length === ADD_ID_LENGTH) {
-        request = API.addCategory;
-      }
-      try {
-        const { code, message, data } = await request(category.data);
-        if (code === HttpResponseCode.OK) {
-          ElMessage.success(message);
-          Object.assign(category.data, {
-            _id: data._id,
-            // @ts-ignore
-            title: event.target?.value,
-            editable: false,
-          });
-        } else {
-          ElMessage.error(message);
-        }
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
     const doAction = (action: keyof typeof TreeTableActions, data: any) => {
       typeof doActionMethods[action] === "function" &&
         doActionMethods[action](data);
@@ -349,10 +358,12 @@ export default defineComponent({
     const {
       ADD_TABLE_ROW,
       ADD_TREE_NODE,
-      UPDATE_TABLE_ROW,
       UPDATE_TREE_NODE,
+      UPDATE_TABLE_ROW,
       DELETE_TABLE_ROW,
       DELETE_TREE_NODE,
+      ADD_OR_UPDATE_TREE_NODE,
+      DELETE_MULTIPLE_TABLE_ROW,
     } = TreeTableActions;
 
     const doActionMethods = {
@@ -382,62 +393,89 @@ export default defineComponent({
           },
         });
       },
-      [DELETE_TABLE_ROW]() {
-        if (multipleSelection.value.length) {
-          const reqs = multipleSelection.value.map((_id) => {
-            return API.removeCodeSnippet(_id);
-          });
-          Promise.all(reqs)
-            .then(() => {
-              getCodeSnippets();
-              ElMessage({
-                type: "success",
-                message: `删除成功`,
-              });
-            })
-            .catch(console.error);
-        }
-      },
-      [ADD_TREE_NODE](treeRef: any) {
-        const root = treeRef.root.childNodes[0];
-        treeRef.append(
-          {
-            _id: randomstring.generate({
-              capitalization: "lowercase",
-              length: ADD_ID_LENGTH,
-            }),
-            title: "",
-            count: 0,
-            editable: true,
-          },
-          root
-        );
-      },
-      [UPDATE_TREE_NODE](treeRef: any) {
-        const selectedTreeNode = treeRef.getCheckedNodes();
-        if (selectedTreeNode.length !== 1) {
-          return ElMessage.warning("必须选择一项");
-        }
-        selectedTreeNode.forEach((node: any) => {
-          node.editable = true;
-        });
-      },
-      [DELETE_TREE_NODE](treeRef: any) {
-        const selectedTreeNode = treeRef.getCheckedNodes();
-        if (!selectedTreeNode.length) {
-          return ElMessage.warning("至少选择一项");
-        }
-        const reqs = selectedTreeNode.map((category: any) => {
-          return API.removeCategory(category);
-        });
-
-        Promise.all(reqs)
-          .then(() => {
-            selectedTreeNode.forEach((node: any) => {
-              treeRef.remove(node);
+      async [DELETE_TABLE_ROW](row: any) {
+        try {
+          const { code, message } = await removeCodeSnippet(row._id);
+          if (code === HttpResponseCode.OK) {
+            ElMessage({
+              type: "success",
+              message,
             });
-          })
-          .catch(console.error);
+            getCodeSnippets();
+          } else {
+            ElMessage({
+              type: "error",
+              message,
+            });
+          }
+        } catch (error) {
+          console.error(error);
+        }
+      },
+      async [DELETE_MULTIPLE_TABLE_ROW]() {
+        try {
+          const { code, message } = await removeCodeSnippets(
+            selectedTableRow.value
+          );
+          if (code === HttpResponseCode.OK) {
+            ElMessage({
+              type: "success",
+              message,
+            });
+            getCodeSnippets();
+          } else {
+            ElMessage({
+              type: "error",
+              message,
+            });
+          }
+        } catch (error) {
+          console.error(error);
+        }
+      },
+      async [ADD_TREE_NODE]() {
+        const { _id, ...rest } = toRaw(form);
+        const { code, message, data } = await addCategory(rest);
+        debugger;
+        if (code === HttpResponseCode.OK) {
+          ElMessage.success(message);
+          Object.assign(form, {
+            _id: data._id,
+          });
+          dialogFormVisible.value = false;
+          getCodeCategories();
+        } else {
+          ElMessage.error(message);
+        }
+      },
+      async [UPDATE_TREE_NODE]() {
+        const { _id, ...rest } = toRaw(form);
+        const { code, message } = await updateCategory(_id, rest);
+        if (code === HttpResponseCode.OK) {
+          ElMessage.success(message);
+          dialogFormVisible.value = false;
+          getCodeCategories();
+        } else {
+          ElMessage.error(message);
+        }
+      },
+      async [DELETE_TREE_NODE]() {
+        const { _id } = toRaw(form);
+        const { code, message } = await removeCategory(_id);
+        if (code === HttpResponseCode.OK) {
+          ElMessage.success(message);
+          dialogFormVisible.value = false;
+          getCodeCategories();
+        } else {
+          ElMessage.error(message);
+        }
+      },
+      [ADD_OR_UPDATE_TREE_NODE]() {
+        if (form._id) {
+          doAction(UPDATE_TREE_NODE, null);
+        } else {
+          doAction(ADD_TREE_NODE, null);
+        }
       },
     };
 
@@ -445,13 +483,37 @@ export default defineComponent({
       return (category && category.avatar) || "";
     };
 
+    const openUpdateDialog = (params: any) => {
+      const data = params.data || {};
+      form._id = data._id || "";
+      form.title = data.title || "";
+      form.avatar = data.avatar || "";
+      dialogFormVisible.value = true;
+    };
+
+    const handleFileChange = (_uploadFile, uploadFiles) => {
+      fileList.value = uploadFiles;
+    };
+
+    const onUploadToQiniu = () => {
+      upload(fileList.value[0]).then((res: any) => {
+        form.avatar = res;
+      });
+    };
+
+    const onRemoveDialog = (params: any) => {
+      const data = params.data || {};
+      form._id = data._id || "";
+      form.title = data.title || "";
+      form.avatar = data.avatar || "";
+      doAction(DELETE_TREE_NODE, null);
+    };
+
     return {
       treeConfig,
       tableConfig,
       paginationConfig,
-      setCategoryAvatar,
       getCategoryAvatar,
-      doCategoryAction,
       searchCodeSnippets,
       doAction,
       dayjs,
@@ -459,10 +521,23 @@ export default defineComponent({
       Edit,
       Delete,
       keyword,
+      dialogFormVisible,
+      formLabelWidth,
+      openUpdateDialog,
+      onRemoveDialog,
+      form,
+      fileList,
+      selectedTableRow,
+      handleFileChange,
+      onUploadToQiniu,
       ...TreeTableActions,
     };
   },
 });
 </script>
 
-<style lang="scss"></style>
+<style lang="scss">
+.el-tree {
+  --el-tree-node-content-height: 40px;
+}
+</style>

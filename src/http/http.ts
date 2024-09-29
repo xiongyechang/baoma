@@ -1,8 +1,8 @@
 import { baseURL } from "@/config/config";
 import { getToken } from "@/utils/utils";
-import axios, { Method } from "axios";
+import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 import router from "../router";
-import API from "@/api/api";
+import { getRefreshToken } from "@/api/api";
 import { HttpResponseCode } from "@/constants/constants";
 import { ElMessage } from "element-plus";
 import store from "@/store";
@@ -30,7 +30,7 @@ axios.interceptors.response.use(
       requests.push(() => axios(config));
       if (!isRefreshing) {
         isRefreshing = true;
-        return API.getRefreshToken()
+        return getRefreshToken()
           .then((res) => {
             const { data, code, message } = res;
             if (code === HttpResponseCode.OK) {
@@ -61,48 +61,75 @@ axios.interceptors.response.use(
   }
 );
 
-const request = (method: Method, url: string, data?: Record<string, any>) => {
-  let args = {};
+type ResponseData<T> = {
+  code: number;
+  data: T;
+  message: string;
+};
 
-  if (method === "GET" || method === "DELETE") {
-    args = {
-      params: data,
-    };
-  } else if (method === "POST" || method === "PUT") {
-    args = {
-      data,
-    };
-  } else {
-    args = {};
+type PromisedResponse<T> = Promise<ResponseData<T>>;
+
+const handleRequest = async <T>(
+  config: AxiosRequestConfig
+): PromisedResponse<T> => {
+  try {
+    const response: AxiosResponse<ResponseData<T>> = await axios(config);
+    const { data } = response;
+    return data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      return {
+        data: null as unknown as T,
+        code: error.response?.status || 500,
+        message: error.message,
+      };
+    } else {
+      return {
+        data: null as unknown as T,
+        code: 500,
+        message: "Unknown error",
+      };
+    }
   }
-
-  return axios({
-    baseURL,
-    method,
-    url,
-    ...args,
-  });
 };
 
 export default class Http {
-  static get(path: string, params?: Record<string, any>) {
-    return request(`GET`, `${path}`, params)
-      .then(({ data }) => data)
-      .catch(console.error);
+  static get<T>(
+    url: string,
+    params?: Record<string, any>
+  ): PromisedResponse<T> {
+    return handleRequest<T>({
+      baseURL,
+      method: "GET",
+      url,
+      params,
+    });
   }
-  static post(path: string, params?: Record<string, any>) {
-    return request(`POST`, `${path}`, params)
-      .then(({ data }) => data)
-      .catch(console.error);
+  static post<T>(url: string, data?: Record<string, any>): PromisedResponse<T> {
+    return handleRequest<T>({
+      baseURL,
+      method: "POST",
+      url,
+      data,
+    });
   }
-  static delete(path: string, params?: Record<string, any>) {
-    return request(`DELETE`, `${path}`, params)
-      .then(({ data }) => data)
-      .catch(console.error);
+  static delete<T>(
+    url: string,
+    params?: Record<string, any>
+  ): PromisedResponse<T> {
+    return handleRequest<T>({
+      baseURL,
+      method: "DELETE",
+      url,
+      params,
+    });
   }
-  static put(path: string, params?: Record<string, any>) {
-    return request(`PUT`, `${path}`, params)
-      .then(({ data }) => data)
-      .catch(console.error);
+  static put<T>(url: string, data?: Record<string, any>): PromisedResponse<T> {
+    return handleRequest<T>({
+      baseURL,
+      method: "PUT",
+      url,
+      data,
+    });
   }
 }

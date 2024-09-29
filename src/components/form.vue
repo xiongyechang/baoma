@@ -4,7 +4,7 @@
 
 <script lang="ts">
 import { onMounted, ref, defineComponent } from "vue";
-import API from "@/api/api";
+import { fetchCodeSnippet, updateCodeSnippet, addCodeSnippet } from "@/api/api";
 import { HttpResponseCode } from "@/constants/constants";
 import { ElMessage, ElNotification } from "element-plus";
 import Vditor from "vditor";
@@ -13,6 +13,7 @@ import isImage from "is-image";
 import { useQiniu } from "@/hooks";
 // @ts-ignore
 import isAudio from "is-audio";
+import { toRaw } from "vue";
 
 export default defineComponent({
   name: "form-component",
@@ -40,7 +41,7 @@ export default defineComponent({
 
     const getCodeSnippet = async (_id: string) => {
       try {
-        const { code, message, data } = await API.getCodeSnippet(_id);
+        const { code, message, data } = await fetchCodeSnippet(_id);
         if (code === HttpResponseCode.OK) {
           formData.value = data;
         } else {
@@ -51,17 +52,9 @@ export default defineComponent({
       }
     };
 
-    const onSave = async (value?: string) => {
-      formData.value.content = value || "";
-      const request = formData.value._id
-        ? API.updateCodeSnippet
-        : API.addCodeSnippet;
+    const onAdd = async (params: any) => {
       try {
-        const reg = /^# (.*)\n?/;
-        if (reg.test(formData.value.content)) {
-          formData.value.title = RegExp.$1;
-        }
-        const { code, message, data } = await request(formData.value);
+        const { code, message, data } = await addCodeSnippet(params);
         if (code === HttpResponseCode.OK) {
           Object.assign(formData.value, {
             _id: data._id,
@@ -78,8 +71,37 @@ export default defineComponent({
       }
     };
 
+    const onUpdate = async (_id: string, params: any) => {
+      try {
+        const { code, message } = await updateCodeSnippet(_id, params);
+        if (code === HttpResponseCode.OK) {
+          ElNotification.success({
+            message,
+            offset: 18,
+          });
+        } else {
+          ElMessage.error(message);
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    const onSave = async (value?: string) => {
+      formData.value.content = value || "";
+      const reg = /^# (.*)\n?/;
+      if (reg.test(formData.value.content)) {
+        formData.value.title = RegExp.$1;
+      }
+      const { _id, ...rest } = toRaw(formData.value);
+      if (_id) {
+        await onUpdate(_id, rest);
+      } else {
+        await onAdd(rest);
+      }
+    };
+
     const onContentChange = (value: string) => {
-      console.count("content change == " + value);
       formData.value.content = value;
     };
 
@@ -101,7 +123,6 @@ export default defineComponent({
 
       vditor.value = new Vditor("vditor", {
         height: height.value,
-        cdn: "https://cdn.xiongyechang.com/vditor",
         mode: "sv",
         fullscreen: {
           index: 520,

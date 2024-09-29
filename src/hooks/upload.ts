@@ -38,7 +38,9 @@ export const useQiniu = () => {
           reject(error);
         },
         complete: (res: any) => {
-          resolve(store.getters["admin/qiniuDomain"] + "/" + res.key);
+          resolve(
+            (store.getters["admin/qiniuDomain"] + "/" + res.key) as string
+          );
         },
       };
 

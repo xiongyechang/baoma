@@ -8,72 +8,115 @@ const CodeSnippetRoute = `/code-snippet`;
 
 const CodeCategoryRoute = `/code-category`;
 
-const AdminRoute = `/admin`;
+const CommonRoute = `/common`;
 
-export default {
-  addCodeSnippet(codesnippet: Record<string, any> | undefined) {
-    return http.post(`${baseURL}${prefix}${CodeSnippetRoute}`, codesnippet);
-  },
-  updateCodeSnippet(codesnippet: Record<string, any> | undefined) {
-    return http.put(`${baseURL}${prefix}${CodeSnippetRoute}`, codesnippet);
-  },
-  getCodeSnippets(params: {
-    page: number;
-    limit: number;
-    categoryId?: string;
-    keyword?: string;
-  }) {
-    return http.get(
-      `${baseURL}${prefix}${CodeSnippetRoute}?${toQuerystring(params)}`
-    );
-  },
-  getCodeSnippet(_id: any) {
-    return http.get(`${baseURL}${prefix}${CodeSnippetRoute}/${_id}`);
-  },
-  removeCodeSnippet(_id: string) {
-    return http.delete(`${baseURL}${prefix}${CodeSnippetRoute}?_id=${_id}`);
-  },
-  getCodeCategories(params: { page: number; limit: number }) {
-    return http.get(
-      `${baseURL}${prefix}${CodeCategoryRoute}?${toQuerystring(params)}`
-    );
-  },
-  getCodeSnippetsByCategory({ _id, page = 1, limit = 20 }: any) {
-    return http.get(
-      `${baseURL}${prefix}${CodeSnippetRoute}/by?categoryId=${_id}&page=${page}&limit=${limit}`
-    );
-  },
-  addCategory(category: Record<string, any> | undefined) {
-    return http.post(`${baseURL}${prefix}${CodeCategoryRoute}`, category);
-  },
-  removeCategory({ _id }: any) {
-    return http.delete(`${baseURL}${prefix}${CodeCategoryRoute}?_id=${_id}`);
-  },
-  updateCategory(category: Record<string, any> | undefined) {
-    return http.put(`${baseURL}${prefix}${CodeCategoryRoute}`, category);
-  },
-  // 管理员
-  getQiniuToken() {
-    return http.get(`${baseURL}${prefix}${AdminRoute}/getQiniuToken`);
-  },
-  getQiniuDomain() {
-    return http.get(`${baseURL}${prefix}${AdminRoute}/getQiniuDomain`);
-  },
-  getVerifyCode() {
-    return http.get(`${baseURL}${prefix}${AdminRoute}/getVerifyCode`);
-  },
-  getPublicKey() {
-    return http.get(`${baseURL}${prefix}${AdminRoute}/getPublicKey`);
-  },
-  login(secret: Record<string, any> | undefined) {
-    return http.post(`${baseURL}${prefix}${AdminRoute}/login`, secret);
-  },
-  getRefreshToken() {
-    return http.get(`${baseURL}${prefix}${AdminRoute}/getRefreshToken`);
-  },
-  forgetPwd(password: string) {
-    return http.post(`${baseURL}${prefix}${AdminRoute}/forgetPwd`, {
-      password,
-    });
-  },
+const UserRoute = `/user`;
+
+const addCodeSnippet = (codesnippet) => {
+  return http.post<any>(`${baseURL}${prefix}${CodeSnippetRoute}`, codesnippet);
+};
+
+const updateCodeSnippet = (_id, codesnippet) => {
+  return http.put<any>(
+    `${baseURL}${prefix}${CodeSnippetRoute}/${_id}`,
+    codesnippet
+  );
+};
+
+const fetchCodeSnippets = (params) => {
+  return http.get<any>(
+    `${baseURL}${prefix}${CodeSnippetRoute}?${toQuerystring(params)}`
+  );
+};
+
+const fetchCodeSnippet = (_id) => {
+  return http.get<any>(`${baseURL}${prefix}${CodeSnippetRoute}/${_id}`);
+};
+
+const removeCodeSnippet = (_id) => {
+  return http.delete<any>(`${baseURL}${prefix}${CodeSnippetRoute}/${_id}`);
+};
+
+const removeCodeSnippets = (_ids: string[]) => {
+  return http.delete<any>(`${baseURL}${prefix}${CodeSnippetRoute}`, {
+    _ids,
+  });
+};
+
+const fetchCodeCategories = (params) => {
+  return http.get<any>(
+    `${baseURL}${prefix}${CodeCategoryRoute}?${toQuerystring(params)}`
+  );
+};
+
+const fetchCodeSnippetsByCategory = ({ _id, page = 1, limit = 20 }) => {
+  return http.get<any>(
+    `${baseURL}${prefix}${CodeSnippetRoute}/by?categoryId=${_id}&page=${page}&limit=${limit}`
+  );
+};
+
+const addCategory = (category) => {
+  return http.post<any>(`${baseURL}${prefix}${CodeCategoryRoute}`, category);
+};
+
+const removeCategory = (_id: string) => {
+  return http.delete<any>(`${baseURL}${prefix}${CodeCategoryRoute}/${_id}`);
+};
+
+const updateCategory = (_id, category) => {
+  return http.put<any>(
+    `${baseURL}${prefix}${CodeCategoryRoute}/${_id}`,
+    category
+  );
+};
+
+const fetchQiniuToken = () => {
+  return http.get<any>(`${baseURL}${prefix}${CommonRoute}/getQiniuToken`);
+};
+
+const fetchQiniuDomain = () => {
+  return http.get<any>(`${baseURL}${prefix}${CommonRoute}/getQiniuDomain`);
+};
+
+const fetchVerifyCode = <T>() => {
+  return http.get<T>(`${baseURL}${prefix}${CommonRoute}/getVerifyCode`);
+};
+
+const fetchPublicKey = () => {
+  return http.get<any>(`${baseURL}${prefix}${CommonRoute}/getPublicKey`);
+};
+
+const login = (secret) => {
+  return http.post<any>(`${baseURL}${prefix}${UserRoute}/login`, secret);
+};
+
+const getRefreshToken = () => {
+  return http.get<any>(`${baseURL}${prefix}${UserRoute}/getRefreshToken`);
+};
+
+const forgetPassword = (password) => {
+  return http.post<any>(`${baseURL}${prefix}${UserRoute}/forgetPwd`, {
+    password,
+  });
+};
+
+export {
+  addCodeSnippet,
+  updateCodeSnippet,
+  fetchCodeSnippets,
+  fetchCodeSnippet,
+  removeCodeSnippet,
+  removeCodeSnippets,
+  fetchCodeCategories,
+  fetchCodeSnippetsByCategory,
+  addCategory,
+  removeCategory,
+  updateCategory,
+  fetchQiniuToken,
+  fetchQiniuDomain,
+  fetchVerifyCode,
+  fetchPublicKey,
+  login,
+  getRefreshToken,
+  forgetPassword,
 };
