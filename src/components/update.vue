@@ -30,72 +30,58 @@
   </el-dialog>
 </template>
 
-<script lang="ts">
+<script lang="ts" setup>
 import { IpcRendererEvent, ipcRenderer } from "electron";
-import { ref, onMounted, defineComponent } from "vue";
+import { ref, onMounted } from "vue";
 import { Update } from "@/constants/constants";
 
-export default defineComponent({
-  name: "update-component",
-  setup() {
-    const updateAvailable = ref(false),
-      updating = ref(false),
-      percentage = ref(0),
-      dialogVisible = ref(false);
+const updateAvailable = ref(false),
+  updating = ref(false),
+  percentage = ref(0),
+  dialogVisible = ref(false);
 
-    onMounted(() => {
-      const methods: Array<{
-        key: string;
-        method: (event: IpcRendererEvent, ...args: any[]) => void;
-      }> = [
-        {
-          key: Update.IsUpdate, // 有更新
-          method() {
-            updateAvailable.value = true;
-            dialogVisible.value = true;
-          },
-        },
-        {
-          key: Update.DownloadProgress, // 正在更新
-          method(event, progress) {
-            updating.value = true;
-            percentage.value = progress.percent.toFixed(2);
-          },
-        },
-        {
-          key: Update.Message, // 有消息
-          method(event: IpcRendererEvent, data) {
-            console.log(event, data);
-          },
-        },
-      ];
+onMounted(() => {
+  const methods: Array<{
+    key: string;
+    method: (event: IpcRendererEvent, ...args: any[]) => void;
+  }> = [
+    {
+      key: Update.IsUpdate, // 有更新
+      method() {
+        updateAvailable.value = true;
+        dialogVisible.value = true;
+      },
+    },
+    {
+      key: Update.DownloadProgress, // 正在更新
+      method(event, progress) {
+        updating.value = true;
+        percentage.value = progress.percent.toFixed(2);
+      },
+    },
+    {
+      key: Update.Message, // 有消息
+      method(event: IpcRendererEvent, data) {
+        console.log(event, data);
+      },
+    },
+  ];
 
-      methods.forEach(({ key, method }) => {
-        ipcRenderer.on(key, method);
-      });
+  methods.forEach(({ key, method }) => {
+    ipcRenderer.on(key, method);
+  });
 
-      // 检查是否有更新
-      ipcRenderer.send(Update.CheckForUpdate);
-    });
-
-    const onUpdate = () => {
-      ipcRenderer.send(Update.IsUpdate, true);
-    };
-
-    const cancelUpdate = () => {
-      ipcRenderer.send(Update.CancelUpdate, true);
-    };
-
-    return {
-      updateAvailable,
-      dialogVisible,
-      updating,
-      percentage,
-      onUpdate,
-      cancelUpdate,
-    };
-  },
+  // 检查是否有更新
+  ipcRenderer.send(Update.CheckForUpdate);
 });
+
+const onUpdate = () => {
+  ipcRenderer.send(Update.IsUpdate, true);
+};
+
+const cancelUpdate = () => {
+  ipcRenderer.send(Update.CancelUpdate, true);
+};
 </script>
 
 <style lang="scss" scoped>

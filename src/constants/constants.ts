@@ -68,5 +68,3 @@ export const TreeTableActions = {
 
   ADD_OR_UPDATE_TREE_NODE: "ADD_OR_UPDATE_TREE_NODE",
 } as const;
-
-export const ADD_ID_LENGTH = 8;
