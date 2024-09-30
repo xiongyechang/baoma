@@ -5,7 +5,7 @@
       <el-tree
         ref="treeRef"
         v-bind="treeConfig"
-        style="height: calc(100% - 50px); overflow: auto"
+        style="height: calc(100% - 40px); overflow: auto"
       >
         <template #default="node">
           <slot name="tree-list" :data="node"></slot>

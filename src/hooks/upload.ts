@@ -2,7 +2,6 @@ import * as qiniu from "qiniu-js";
 import randomstring from "randomstring";
 import mime from "mime";
 import store from "@/store";
-import { onMounted } from "vue";
 
 export const useQiniu = () => {
   const upload = (file: File) => {
@@ -53,10 +52,8 @@ export const useQiniu = () => {
 
   const getDomain = async () => store.dispatch("admin/getQiniuDomain");
 
-  onMounted(() => {
-    getDomain();
-    getToken();
-  });
+  getDomain();
+  getToken();
 
   return {
     upload,

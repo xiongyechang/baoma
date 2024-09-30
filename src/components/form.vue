@@ -11,7 +11,6 @@ import Vditor from "vditor";
 import "vditor/dist/index.css";
 import isImage from "is-image";
 import { useQiniu } from "@/hooks";
-// @ts-ignore
 import isAudio from "is-audio";
 import { toRaw } from "vue";
 
