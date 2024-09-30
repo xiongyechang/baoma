@@ -58,7 +58,7 @@ axios.interceptors.response.use(
     } else {
       return Promise.reject(error);
     }
-  }
+  },
 );
 
 type ResponseData<T> = {
@@ -70,7 +70,7 @@ type ResponseData<T> = {
 type PromisedResponse<T> = Promise<ResponseData<T>>;
 
 const handleRequest = async <T>(
-  config: AxiosRequestConfig
+  config: AxiosRequestConfig,
 ): PromisedResponse<T> => {
   try {
     const response: AxiosResponse<ResponseData<T>> = await axios(config);
@@ -96,7 +96,7 @@ const handleRequest = async <T>(
 export default class Http {
   static get<T>(
     url: string,
-    params?: Record<string, any>
+    params?: Record<string, any>,
   ): PromisedResponse<T> {
     return handleRequest<T>({
       baseURL,
@@ -115,7 +115,7 @@ export default class Http {
   }
   static delete<T>(
     url: string,
-    params?: Record<string, any>
+    params?: Record<string, any>,
   ): PromisedResponse<T> {
     return handleRequest<T>({
       baseURL,

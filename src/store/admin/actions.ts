@@ -26,7 +26,7 @@ const getQiniuDomain = (context: ActionContext<State, any>) => {
 
 const setLoginStatus = (
   { commit }: ActionContext<State, any>,
-  loginStatus: boolean
+  loginStatus: boolean,
 ) => {
   return new Promise((resolve) => {
     commit("setLoginStatus", loginStatus);

@@ -20,7 +20,7 @@ export function useCookie() {
           }
         }
         callback({ responseHeaders: details.responseHeaders });
-      }
+      },
     );
   });
 }

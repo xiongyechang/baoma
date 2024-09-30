@@ -1,5 +1,8 @@
 <template>
-  <span class="opt-hover opt" title="更新">
+  <span
+    class="flex items-center justify-center h-[33px] text-white text-center region-no-drag p-[10px] leading-[33px] min-w-[40px] hover:bg-red-600"
+    title="更新"
+  >
     <el-badge value="有更新啦" :hidden="!updateAvailable">
       <i class="iconfont icon-update"></i>
     </el-badge>
@@ -20,7 +23,7 @@
       />
     </el-row>
     <template #footer>
-      <span class="dialog-footer">
+      <span>
         <el-button @click="cancelUpdate" :disabled="!updating"
           >取消更新</el-button
         >
@@ -32,8 +35,8 @@
 
 <script lang="ts" setup>
 import { IpcRendererEvent, ipcRenderer } from "electron";
-import { ref, onMounted } from "vue";
 import { Update } from "@/constants/constants";
+import { ref, onMounted } from "vue";
 
 const updateAvailable = ref(false),
   updating = ref(false),
@@ -83,24 +86,3 @@ const cancelUpdate = () => {
   ipcRenderer.send(Update.CancelUpdate, true);
 };
 </script>
-
-<style lang="scss" scoped>
-.opt {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 33px;
-  min-width: 40px;
-  line-height: 33px;
-  padding: 0 10px;
-  text-align: center;
-  color: #fff;
-  -webkit-app-region: no-drag;
-}
-.opt-hover {
-  cursor: pointer;
-  &:hover {
-    background: red;
-  }
-}
-</style>

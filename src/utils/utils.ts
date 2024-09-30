@@ -3,7 +3,7 @@ export function getToken() {
 }
 
 export function toQuerystring(
-  params: Record<string, number | string | undefined>
+  params: Record<string, number | string | undefined>,
 ) {
   return Object.keys(params)
     .map((key) => {

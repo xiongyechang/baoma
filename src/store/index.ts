@@ -20,7 +20,7 @@ export default createStore<{
     getQiniuDomain: (context: ActionContext<State, any>) => void;
     setLoginStatus: (
       context: ActionContext<State, any>,
-      loginStatus: boolean
+      loginStatus: boolean,
     ) => Promise<boolean>;
   };
   mutations: {

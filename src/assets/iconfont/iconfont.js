@@ -17,14 +17,14 @@
         a.__iconfont__svg__cssinject__ = !0;
         try {
           document.write(
-            "<style>.svgfont {display: inline-block;width: 1em;height: 1em;fill: currentColor;vertical-align: -0.1em;font-size:16px;}</style>"
+            "<style>.svgfont {display: inline-block;width: 1em;height: 1em;fill: currentColor;vertical-align: -0.1em;font-size:16px;}</style>",
           );
         } catch (c) {
           console && console.log(c);
         }
       }
       (e = function () {
-        var c,
+        let c,
           t = document.createElement("div");
         (t.innerHTML = a._iconfont_svg_string_2352963),
           (t = t.getElementsByTagName("svg")[0]) &&

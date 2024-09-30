@@ -19,13 +19,13 @@ const addCodeSnippet = (codesnippet) => {
 const updateCodeSnippet = (_id, codesnippet) => {
   return http.put<any>(
     `${baseURL}${prefix}${CodeSnippetRoute}/${_id}`,
-    codesnippet
+    codesnippet,
   );
 };
 
 const fetchCodeSnippets = (params) => {
   return http.get<any>(
-    `${baseURL}${prefix}${CodeSnippetRoute}?${toQuerystring(params)}`
+    `${baseURL}${prefix}${CodeSnippetRoute}?${toQuerystring(params)}`,
   );
 };
 
@@ -45,13 +45,13 @@ const removeCodeSnippets = (_ids: string[]) => {
 
 const fetchCodeCategories = (params) => {
   return http.get<any>(
-    `${baseURL}${prefix}${CodeCategoryRoute}?${toQuerystring(params)}`
+    `${baseURL}${prefix}${CodeCategoryRoute}?${toQuerystring(params)}`,
   );
 };
 
 const fetchCodeSnippetsByCategory = ({ _id, page = 1, limit = 20 }) => {
   return http.get<any>(
-    `${baseURL}${prefix}${CodeSnippetRoute}/by?categoryId=${_id}&page=${page}&limit=${limit}`
+    `${baseURL}${prefix}${CodeSnippetRoute}/by?categoryId=${_id}&page=${page}&limit=${limit}`,
   );
 };
 
@@ -66,7 +66,7 @@ const removeCategory = (_id: string) => {
 const updateCategory = (_id, category) => {
   return http.put<any>(
     `${baseURL}${prefix}${CodeCategoryRoute}/${_id}`,
-    category
+    category,
   );
 };
 

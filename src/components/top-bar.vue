@@ -45,7 +45,7 @@ import {
 } from "@element-plus/icons-vue";
 
 let currWindow: any = null;
-let windowSize = ref(WindowSize.normal);
+const windowSize = ref(WindowSize.normal);
 
 const name = app.getName();
 
@@ -60,7 +60,7 @@ onMounted(() => {
   currWindow = getCurrentWindow(); // 当前窗口
 
   document.addEventListener("visibilitychange", () => {
-    var isHidden = document.hidden;
+    const isHidden = document.hidden;
     if (isHidden) {
       if (currWindow.isMinimized()) {
         windowSize.value = WindowSize.minimize;
@@ -80,7 +80,7 @@ onMounted(() => {
 const showBackBtn = computed(() => route.path !== "/");
 
 const logoMarginLeft = computed(() =>
-  route.path === "/" ? { marginLeft: "10px" } : {}
+  route.path === "/" ? { marginLeft: "10px" } : {},
 );
 
 const maximize = () => {

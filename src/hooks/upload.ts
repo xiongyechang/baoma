@@ -26,7 +26,7 @@ export const useQiniu = () => {
         key,
         store.getters["admin/qiniuToken"],
         putExtra,
-        config
+        config,
       );
 
       const observer = {
@@ -38,7 +38,7 @@ export const useQiniu = () => {
         },
         complete: (res: any) => {
           resolve(
-            (store.getters["admin/qiniuDomain"] + "/" + res.key) as string
+            (store.getters["admin/qiniuDomain"] + "/" + res.key) as string,
           );
         },
       };

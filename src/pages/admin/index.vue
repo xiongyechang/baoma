@@ -157,7 +157,7 @@
       </el-form-item>
     </el-form>
     <template #footer>
-      <div class="dialog-footer">
+      <div>
         <el-button @click="dialogFormVisible = false">Cancel</el-button>
         <el-button
           type="primary"
@@ -172,7 +172,7 @@
 
 <script lang="ts" setup>
 import { Plus, Edit, Delete, UploadFilled } from "@element-plus/icons-vue";
-import { defineComponent, ref, reactive, toRaw } from "vue";
+import { ref, reactive, toRaw } from "vue";
 import { ElMessage } from "element-plus";
 import {
   removeCategory,
@@ -280,7 +280,7 @@ getCodeSnippets();
 const onNodeClick = (
   data: TreeNodeData,
   node: Node,
-  e: MouseEvent
+  e: MouseEvent,
 ): MouseEvent => {
   keyword.value = "";
   selectedTreeNode.value = node;
@@ -399,7 +399,7 @@ const doActionMethods = {
   async [DELETE_MULTIPLE_TABLE_ROW]() {
     try {
       const { code, message } = await removeCodeSnippets(
-        selectedTableRow.value
+        selectedTableRow.value,
       );
       if (code === HttpResponseCode.OK) {
         ElMessage({

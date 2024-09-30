@@ -1,11 +1,20 @@
 <template>
-  <div id="bottombar" ref="bottombar">
-    <div class="opts">
-      <span class="opt" title="电量">
+  <div
+    class="flex justify-start items-center drag-region h-[33px]"
+    style="background: var(--el-color-primary)"
+  >
+    <div class="flex justify-start items-center w-full">
+      <span
+        class="flex justify-center items-center text-white text-center drag-no-region h-[33px] min-w-[40px] p-[10px] leading-[33px]"
+        title="电量"
+      >
         <i class="iconfont" :class="batteryInfo.icon"></i>
         <span class="iconfont-title">{{ batteryInfo.number }}%</span>
       </span>
-      <span class="opt" title="网络">
+      <span
+        class="flex justify-center items-center text-white text-center drag-no-region h-[33px] min-w-[40px] p-[10px] leading-[33px]"
+        title="网络"
+      >
         <i class="iconfont" :class="[networkInfo.icon]"></i>
       </span>
       <Update />
@@ -63,7 +72,7 @@ const batteryInfo = computed(() => {
       (level: number) => {
         icon: string;
         number: string;
-      }
+      },
     ]
   > = [
     [
@@ -117,35 +126,3 @@ const batteryInfo = computed(() => {
     : { icon: BATTERY.EMPTY, number: batteryPercentage(level.value) };
 });
 </script>
-
-<style lang="scss" scoped>
-#bottombar {
-  height: 33px;
-  background: var(--el-color-primary);
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  -webkit-app-region: drag;
-
-  .opts {
-    height: 33px;
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-
-    .opt {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-width: 40px;
-      height: 33px;
-      line-height: 33px;
-      padding: 0 10px;
-      text-align: center;
-      color: #fff;
-      -webkit-app-region: no-drag;
-    }
-  }
-}
-</style>

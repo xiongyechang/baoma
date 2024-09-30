@@ -146,12 +146,11 @@ export default {
       (ruleFormRef.value as any).validate(async (valid: boolean) => {
         if (valid) {
           try {
-            let encrypt = new JSEncrypt();
+            const encrypt = new JSEncrypt();
             encrypt.setPublicKey(_data.publicKey);
-            let username = _data.ruleForm.username;
-            let password = encrypt.encrypt(_data.ruleForm.password);
-            let verify_code = _data.ruleForm.verify_code;
-            debugger;
+            const username = _data.ruleForm.username;
+            const password = encrypt.encrypt(_data.ruleForm.password);
+            const verify_code = _data.ruleForm.verify_code;
             const { code, message, data } = await login({
               username,
               password,
