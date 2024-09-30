@@ -19,7 +19,7 @@
     <template #tree-list="{ data }">
       <img :src="data.data.avatar" width="18" height="18" alt="" />
       <span class="category-title">{{ data.data.title }}</span>
-      <el-space :size="10">
+      <el-space :size="10" class="mr-2">
         <el-icon size="18px" @click="openUpdateDialog(data)">
           <Edit />
         </el-icon>
