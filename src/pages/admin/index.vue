@@ -18,7 +18,7 @@
     <!-- 树组件的插槽 -->
     <template #tree-list="{ data }">
       <img :src="data.data.avatar" width="18" height="18" alt="" />
-      <span class="category-title">{{ data.data.title }}</span>
+      <span class="flex-1 ml-4">{{ data.data.title }}</span>
       <el-space :size="10" class="mr-2">
         <el-icon size="18px" @click="openUpdateDialog(data)">
           <Edit />
@@ -39,7 +39,7 @@
 
     <!-- 树组件的分组 -->
     <template #table-control-bar>
-      <el-row class="table-widget-top">
+      <el-row class="p-[5px]">
         <el-col :span="8">
           <el-button
             type="primary"

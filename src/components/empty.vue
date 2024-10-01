@@ -1,5 +1,7 @@
 <template>
-  <div class="empty">
+  <div
+    class="inline-block absolute top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%]"
+  >
     <svg
       t="1628001294131"
       class="icon"
@@ -16,24 +18,6 @@
         fill="#dbdbdb"
       ></path>
     </svg>
-    <div class="empty-text">空空如也</div>
+    <div class="text-center text-color-cdcdcd text-16px mt-10px">空空如也</div>
   </div>
 </template>
-
-<script lang="ts" setup></script>
-
-<style lang="scss" scoped>
-.empty {
-  display: inline-block;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-
-  &-text {
-    color: #cdcdcd;
-    font-size: 16px;
-    text-align: center;
-  }
-}
-</style>

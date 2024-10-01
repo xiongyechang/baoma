@@ -1,18 +1,19 @@
 <template>
-  <div class="grid">
-    <div class="tree-widget">
+  <div class="grid h-full text-left">
+    <div>
       <slot name="tree-control-bar" :data="treeRef"></slot>
       <el-tree
         ref="treeRef"
         v-bind="treeConfig"
-        style="height: calc(100% - 40px); overflow: auto"
+        class="overflow-auto"
+        style="height: calc(100% - 40px)"
       >
         <template #default="node">
           <slot name="tree-list" :data="node"></slot>
         </template>
       </el-tree>
     </div>
-    <div class="table-widget">
+    <div class="overflow-hidden table-widget">
       <slot name="table-control-bar" :data="tableRef"></slot>
       <el-table ref="tableRef" v-bind="tableConfig" height="100%">
         <slot name="table-list"></slot>
@@ -25,64 +26,36 @@
   </div>
 </template>
 
-<script lang="ts">
-import { ref, defineComponent, PropType } from "vue";
-import { TableProps } from "element-plus";
+<script lang="ts" setup>
+import { ref } from "vue";
+import { TableProps, ElPagination } from "element-plus";
 import { TreeComponentProps } from "element-plus/es/components/tree/src/tree.type";
 import { CodeSnippetItem } from "@/typing/code-snippet";
-import ElPagination from "element-plus/es/components/pagination";
 
-export default defineComponent({
-  name: "tree-table",
-  props: {
-    treeConfig: {
-      type: Object as PropType<TreeComponentProps>,
-    },
-    tableConfig: {
-      type: Object as PropType<TableProps<CodeSnippetItem>>,
-    },
-    paginationConfig: {
-      type: Object as PropType<typeof ElPagination>,
-    },
-  },
-  setup() {
-    const treeRef = ref<HTMLDivElement | null>(null);
-
-    const tableRef = ref<HTMLDivElement | null>(null);
-
-    return {
-      treeRef,
-      tableRef,
-    };
-  },
-});
+defineProps<{
+  treeConfig: TreeComponentProps;
+  tableConfig: TableProps<CodeSnippetItem>;
+  paginationConfig: typeof ElPagination;
+}>();
+const treeRef = ref<HTMLDivElement | null>(null);
+const tableRef = ref<HTMLDivElement | null>(null);
 </script>
 
-<style lang="scss">
-.el-tree-node__expand-icon {
+<style lang="scss" scoped>
+::v-deep(.el-tree-node__expand-icon) {
   visibility: hidden;
 }
 
-.post-title__link {
-  cursor: pointer;
-  text-decoration: underline;
-  color: blue;
-  font-size: 13px;
-}
-
 .grid {
-  height: 100%;
   display: grid;
   grid-template-columns: 360px calc(100% - 360px);
   grid-template-rows: 100%;
-  text-align: left;
 }
 
 .table-widget {
   display: grid;
   grid-template-columns: 1fr;
   grid-template-rows: 40px 1fr 40px;
-  overflow: hidden;
   &-top {
     padding: 5px;
   }
@@ -91,34 +64,6 @@ export default defineComponent({
   }
   &-bottom {
     padding: 10px;
-  }
-}
-
-.post-form__wrapper {
-  overflow-y: auto;
-}
-
-.category-title {
-  margin-left: 10px;
-  flex: 1;
-}
-
-.custom-tree-node {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  width: 100%;
-  height: 100%;
-  font-size: 13px;
-
-  div:first-child {
-    flex: 1;
-  }
-
-  div:last-child {
-    width: 60px;
-    text-align: right;
-    padding-right: 10px;
   }
 }
 
