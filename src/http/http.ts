@@ -7,6 +7,8 @@ import { HttpResponseCode } from "@/constants/constants";
 import { ElMessage } from "element-plus";
 import store from "@/store";
 
+axios.defaults.withCredentials = true;
+
 axios.interceptors.request.use((config) => {
   const access_token = getToken();
   if (access_token) {

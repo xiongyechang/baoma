@@ -1,6 +1,6 @@
 <template>
-  <div class="container">
-    <div class="main">
+  <div class="container w-full h-full pt-36">
+    <div class="mx-auto text-center p-[20px] br-[10px] bg-white w-[40%]">
       <h2>登录</h2>
       <el-form
         ref="ruleFormRef"
@@ -9,10 +9,10 @@
         label-width="80px"
         label-position="right"
         :status-icon="true"
+        size="large"
       >
         <el-form-item label="账号:" prop="username" required>
           <el-input
-            class="input"
             type="text"
             v-model="ruleForm.username"
             placeholder="请输入账号"
@@ -20,25 +20,19 @@
         </el-form-item>
         <el-form-item label="密码:" prop="password" required>
           <el-input
-            class="input"
             type="password"
             v-model="ruleForm.password"
             placeholder="请输入密码"
           ></el-input>
         </el-form-item>
         <el-form-item label="验证码:" prop="verify_code">
-          <el-row justify="center" align="top">
-            <el-col :span="12">
-              <el-input
-                class="input"
-                v-model="ruleForm.verify_code"
-                placeholder="请输入验证码"
-              ></el-input>
-            </el-col>
-            <el-col :span="12">
-              <div v-html="verifyCodeImg" @click="getVerifyCode"></div>
-            </el-col>
-          </el-row>
+          <el-input
+            v-model="ruleForm.verify_code"
+            placeholder="请输入验证码"
+          ></el-input>
+        </el-form-item>
+        <el-form-item>
+          <div v-html="verifyCodeImg" @click="getVerifyCode"></div>
         </el-form-item>
         <el-form-item>
           <el-button @click="submitForm" type="primary">登录</el-button>
@@ -71,8 +65,8 @@ export default {
     const _data = reactive({
       verifyCodeImg: "",
       ruleForm: {
-        username: "xiongyechang",
-        password: "000000000",
+        username: "xiong yechang",
+        password: "123456",
         verify_code: "",
       },
       rules: {
@@ -200,9 +194,8 @@ export default {
     // 如果并行发送请求, 则会请求回来两个不同的cookie, 登陆时, 请求发送的cookie是不对的,
     // 无法验证 验证码的准确性
     const asyncRequest = async function () {
-      getPublicKey().then(() => {
-        getVerifyCode();
-      });
+      await getPublicKey();
+      await getVerifyCode();
     };
 
     asyncRequest();
@@ -222,22 +215,15 @@ export default {
 <style lang="scss" scoped>
 .container {
   background-image: url("http://cdn.xiongyechang.com/blog-background.jpg");
-  background-size: cover;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100%;
+  background-size: 100% 100%;
   .main {
     text-align: center;
-    background-color: #ffffff;
+    background-color: #eee;
     padding: 0 20px;
     border-radius: 5px;
-    width: 30%;
+    width: 40%;
     h2 {
       margin: 10px 0;
-    }
-    .input {
-      font-size: 16px;
     }
   }
 }

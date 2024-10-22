@@ -1,5 +1,5 @@
 const { defineConfig } = require("@vue/cli-service");
-const { version, name } = require("./package.json");
+const { version, name: productName } = require("./package.json");
 const os = require("os");
 const path = require("path");
 const { default: AutoImport } = require("unplugin-auto-import/webpack");
@@ -15,11 +15,11 @@ const Platform = {
 let downloadURL = ``;
 
 if (os.type() === Platform.Windows) {
-  downloadURL = `https://cdn.xiongyechang.com/${name}@${version}.exe`;
+  downloadURL = `https://cdn.xiongyechang.com/${productName}@${version}.exe`;
 } else if (os.type() === Platform.Linux) {
-  downloadURL = `https://cdn.xiongyechang.com/${name}-${version}.AppImage`;
+  downloadURL = `https://cdn.xiongyechang.com/${productName}-${version}.AppImage`;
 } else if (os.type() === Platform.MacOS) {
-  downloadURL = `https://cdn.xiongyechang.com/${name}@${version}.dmg`;
+  downloadURL = `https://cdn.xiongyechang.com/${productName}@${version}.dmg`;
 }
 
 module.exports = defineConfig({
@@ -53,7 +53,7 @@ module.exports = defineConfig({
       externals: ["clipboard"], // Cannot find module 'clipboard'
       builderOptions: {
         appId: "cs.xiongyechang.com",
-        productName: "baoma", // 项目名，也是生成的安装文件名，即baoma.exe
+        productName: productName, // 项目名，也是生成的安装文件名，即baoma.exe
         copyright: "Copyright © 2021", // 版权信息
         win: {
           icon: "./public/favicon.ico",
@@ -88,7 +88,7 @@ module.exports = defineConfig({
           installerHeaderIcon: "./public/favicon.ico", // 安装时头部图标
           createDesktopShortcut: true, // 创建桌面图标
           createStartMenuShortcut: true, // 创建开始菜单图标
-          shortcutName: "baoma", // 图标名称
+          shortcutName: productName, // 图标名称
         },
         publish: [
           {
