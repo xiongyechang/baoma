@@ -1,26 +1,13 @@
 const { defineConfig } = require("@vue/cli-service");
 const { version, name: productName } = require("./package.json");
 const os = require("os");
+const { exec } = require("child_process");
 const path = require("path");
 const { default: AutoImport } = require("unplugin-auto-import/webpack");
 const { default: Components } = require("unplugin-vue-components/webpack");
 const { ElementPlusResolver } = require("unplugin-vue-components/resolvers");
 
-const Platform = {
-  Windows: "Windows_NT",
-  Linux: "Linux",
-  MacOS: "Darwin",
-};
-
-let downloadURL = ``;
-
-if (os.type() === Platform.Windows) {
-  downloadURL = `https://cdn.xiongyechang.com/${productName}@${version}.exe`;
-} else if (os.type() === Platform.Linux) {
-  downloadURL = `https://cdn.xiongyechang.com/${productName}-${version}.AppImage`;
-} else if (os.type() === Platform.MacOS) {
-  downloadURL = `https://cdn.xiongyechang.com/${productName}@${version}.dmg`;
-}
+const downloadURL = `https://cdn.xiongyechang.com`;
 
 module.exports = defineConfig({
   transpileDependencies: true,
@@ -52,6 +39,25 @@ module.exports = defineConfig({
       nodeIntegration: true,
       externals: ["clipboard"], // Cannot find module 'clipboard'
       builderOptions: {
+        afterPack: async (context) => {
+          // 执行上传脚本
+          console.log("上传构建文件到服务器...afterPack");
+        },
+        afterAllArtifactBuild: async (context) => {
+          const distDir = path.join(context.outDir, "dist_electron");
+          // 构建完成后执行的操作
+          console.log("上传构建文件到服务器...afterAllArtifactBuild");
+          exec(
+            `node ${path.resolve(__dirname, "./scripts/upload.mjs")}`,
+            (err, stdout, stderr) => {
+              if (err) {
+                console.error(`上传失败: ${stderr}`);
+                process.exit(1);
+              }
+              console.log("上传成功:", stdout);
+            },
+          );
+        },
         appId: "cs.xiongyechang.com",
         productName: productName, // 项目名，也是生成的安装文件名，即baoma.exe
         copyright: "Copyright © 2021", // 版权信息
@@ -71,7 +77,7 @@ module.exports = defineConfig({
         mac: {
           icon: "./public/favicon.icns", // 这里是设置的 dock 里面的图标
           category: "public.app-category.utilities", // 应用类型
-          target: ["dmg", "zip"], // 打包的目标类型(默认是dmg和zip),支持很多类型，具体看文档
+          target: ["dmg"], // 打包的目标类型(默认是dmg和zip),支持很多类型，具体看文档
           artifactName: "${productName}@${version}.dmg",
         },
         linux: {
